@@ -459,6 +459,135 @@ function parseTransferCSV(text) {
   return txs;
 }
 
+// ==========================================================================
+// Modern Glassmorphic Toast Notification System
+// ==========================================================================
+function showToastNotification(options = {}) {
+  const {
+    type = 'success', // 'success', 'info', 'warning', 'error'
+    title = 'Notifikasi',
+    subtitle = '',
+    message = '',
+    stats = [],
+    action = null, // { label: string, onClick: function }
+    duration = 6500
+  } = options;
+
+  let container = document.getElementById('toastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.className = 'toast-container';
+    container.setAttribute('aria-live', 'polite');
+    container.setAttribute('aria-atomic', 'true');
+    document.body.appendChild(container);
+  }
+
+  const icons = {
+    success: `<div class="toast-pulse-ring"></div><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`,
+    info: `<div class="toast-pulse-ring"></div><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
+    warning: `<div class="toast-pulse-ring"></div><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    error: `<div class="toast-pulse-ring"></div><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`
+  };
+
+  const toast = document.createElement('div');
+  toast.className = `toast-card toast-${type}`;
+  toast.setAttribute('role', 'alert');
+
+  let statsHtml = '';
+  if (Array.isArray(stats) && stats.length > 0) {
+    statsHtml = `<div class="toast-stats-grid">` +
+      stats.map(s => `
+        <div class="toast-stat-pill">
+          <div class="toast-stat-label">${s.label}</div>
+          <div class="toast-stat-value ${s.highlight ? 'highlight' : ''}">${s.value}</div>
+        </div>
+      `).join('') +
+      `</div>`;
+  }
+
+  let actionHtml = '';
+  if (action || duration > 0) {
+    actionHtml = `<div class="toast-actions">`;
+    if (action) {
+      actionHtml += `<button class="toast-btn toast-btn-primary" id="toastActionBtn">${action.label}</button>`;
+    }
+    actionHtml += `<button class="toast-btn toast-btn-dismiss" id="toastDismissBtn">Tutup</button></div>`;
+  }
+
+  toast.innerHTML = `
+    <div class="toast-header">
+      <div class="toast-icon-wrapper">
+        ${icons[type] || icons.info}
+      </div>
+      <div class="toast-title-group">
+        <div class="toast-title">${title}</div>
+        ${subtitle ? `<div class="toast-subtitle"><span class="toast-live-indicator"></span>${subtitle}</div>` : ''}
+      </div>
+      <button class="toast-close" title="Tutup notifikasi" aria-label="Tutup">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    ${message ? `<div class="toast-message">${message}</div>` : ''}
+    ${statsHtml}
+    ${actionHtml}
+    <div class="toast-progress-track">
+      <div class="toast-progress-bar" style="animation-duration: ${duration}ms;"></div>
+    </div>
+  `;
+
+  container.prepend(toast);
+
+  let isClosing = false;
+  const dismissToast = () => {
+    if (isClosing) return;
+    isClosing = true;
+    toast.classList.add('toast-closing');
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 280);
+  };
+
+  const closeBtn = toast.querySelector('.toast-close');
+  if (closeBtn) closeBtn.addEventListener('click', dismissToast);
+
+  const dismissBtn = toast.querySelector('#toastDismissBtn');
+  if (dismissBtn) dismissBtn.addEventListener('click', dismissToast);
+
+  if (action) {
+    const actionBtn = toast.querySelector('#toastActionBtn');
+    if (actionBtn) {
+      actionBtn.addEventListener('click', () => {
+        action.onClick();
+        dismissToast();
+      });
+    }
+  }
+
+  if (duration > 0) {
+    let timerId = setTimeout(dismissToast, duration);
+    let remainingTime = duration;
+    let startTime = Date.now();
+
+    toast.addEventListener('mouseenter', () => {
+      clearTimeout(timerId);
+      remainingTime -= (Date.now() - startTime);
+    });
+
+    toast.addEventListener('mouseleave', () => {
+      startTime = Date.now();
+      timerId = setTimeout(dismissToast, Math.max(remainingTime, 1000));
+    });
+  }
+
+  return { dismiss: dismissToast };
+}
+
 // Direct Sync from Google Sheets via Pure JavaScript (Netlify Proxy & Live GViz)
 async function syncDataDirectFromGoogleSheets() {
   const badge = document.getElementById('syncStatusBadge');
@@ -504,7 +633,27 @@ async function syncDataDirectFromGoogleSheets() {
     badge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
     badge.style.color = '#10b981';
 
-    alert(`✅ Data Berhasil Disinkronkan!\n\nSeluruh data terbaru dari Google Sheets berhasil ditarik langsung ke dashboard:\n• Total Transaksi: ${(state.transactions || []).length.toLocaleString('id-ID')}\n• Waktu Refresh: ${timeStr}\n\nDashboard siap dianalisis!`);
+    // Show sleek glassmorphic Toast notification
+    showToastNotification({
+      type: 'success',
+      title: 'Data Berhasil Disinkronkan!',
+      subtitle: 'Google Sheets Live Sync Aktif',
+      message: '<p>Seluruh metrik kalkulasi keuangan, saldo bank, dan data transaksi telah diperbarui secara langsung ke versi terbaru.</p>',
+      stats: [
+        { label: 'Total Transaksi', value: (state.transactions || []).length.toLocaleString('id-ID') + ' Tx', highlight: true },
+        { label: 'Waktu Refresh', value: timeStr },
+        { label: 'Total Cash Out', value: formatRp(state.summary?.balances?.cash_out_num || 0) },
+        { label: 'Status Data', value: '100% Up to Date' }
+      ],
+      action: {
+        label: 'Lihat Transaksi ➔',
+        onClick: () => {
+          const tabBtn = document.querySelector('.tab-btn[data-tab="tab-transaksi"]');
+          if (tabBtn) tabBtn.click();
+        }
+      },
+      duration: 6500
+    });
   } catch (err) {
     console.error('Google Sheets sync notice:', err);
     const savedTime = localStorage.getItem('ebdi_last_refresh') || '07 Sep 2026, 17:14 WIB';
@@ -512,11 +661,27 @@ async function syncDataDirectFromGoogleSheets() {
     badge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
     badge.style.color = '#10b981';
 
-    alert('Informasi Sinkronisasi:\n\n' +
-      (window.location.protocol.startsWith('http')
-        ? 'Gagal menghubungi Google Sheets. Pastikan Netlify Proxy (_redirects) sudah aktif di deployment Anda.\n\nDetail: ' + err.message
-        : 'Jika membuka file HTML langsung secara lokal (file://), browser membatasi permintaan CORS eksternal langsung ke Google Sheets. Di Netlify, proxy _redirects akan otomatis mengatasinya.\n\nData lokal Anda tetap 100% lengkap dan siap digunakan.')
-    );
+    const isFileProtocol = !window.location.protocol.startsWith('http');
+    showToastNotification({
+      type: isFileProtocol ? 'info' : 'warning',
+      title: isFileProtocol ? 'Informasi Sinkronisasi Lokal' : 'Gagal Menghubungi Google Sheets',
+      subtitle: isFileProtocol ? 'Mode Offline / Protokol Berkas' : 'Periksa Koneksi atau Proxy Netlify',
+      message: isFileProtocol
+        ? '<p>Saat dibuka secara lokal (<code>file://</code>), browser membatasi CORS langsung ke Google Sheets. Di hosting <strong>Netlify</strong>, proxy <code>_redirects</code> akan otomatis mengatasinya.</p><p style="color:var(--text-primary); font-size:0.8rem; margin-top:4px;">✓ Data lokal Anda tetap <strong>100% lengkap</strong> dan siap digunakan.</p>'
+        : `<p>Gagal menghubungi Google Sheets (${err.message}). Pastikan konfigurasi proxy <code>_redirects</code> sudah aktif di Netlify Anda.</p>`,
+      stats: [
+        { label: 'Transaksi Tersedia', value: (state.transactions || []).length.toLocaleString('id-ID') + ' Tx', highlight: true },
+        { label: 'Data Terakhir', value: savedTime }
+      ],
+      action: {
+        label: 'Lihat Transaksi ➔',
+        onClick: () => {
+          const tabBtn = document.querySelector('.tab-btn[data-tab="tab-transaksi"]');
+          if (tabBtn) tabBtn.click();
+        }
+      },
+      duration: 8000
+    });
   }
 }
 
@@ -1078,14 +1243,7 @@ function initMasterFilterEventListeners() {
     endDateInput.addEventListener('change', onDateChange);
   }
 
-  // Apply & Reset Buttons
-  const btnApply = document.getElementById('btnApplyMasterFilter');
-  if (btnApply) {
-    btnApply.addEventListener('click', () => {
-      applyMasterFilter();
-    });
-  }
-
+  // Reset Master Filter Button
   const btnReset = document.getElementById('btnResetMasterFilter');
   if (btnReset) {
     btnReset.addEventListener('click', () => {
@@ -1679,7 +1837,13 @@ function exportTableToCSV(tableId, filename) {
 // Export Filtered Transactions to CSV
 function exportFilteredTransactionsToCSV() {
   if (!state.filteredTransactions || !state.filteredTransactions.length) {
-    alert('Tidak ada data transaksi untuk diekspor.');
+    showToastNotification({
+      type: 'warning',
+      title: 'Ekspor Dibatalkan',
+      subtitle: 'Tidak Ada Data',
+      message: 'Tidak ada baris transaksi yang sesuai dengan kriteria filter saat ini untuk diekspor ke CSV.',
+      duration: 4000
+    });
     return;
   }
 
@@ -1707,11 +1871,23 @@ function exportFilteredTransactionsToCSV() {
     ].join(','));
   });
 
+  const filename = `Transfer_EBDI_Filtered_${new Date().toISOString().slice(0, 10)}.csv`;
   const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(rows.join('\n'));
   const link = document.createElement('a');
   link.setAttribute('href', csvContent);
-  link.setAttribute('download', `Transfer_EBDI_Filtered_${new Date().toISOString().slice(0, 10)}.csv`);
+  link.setAttribute('download', filename);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+
+  showToastNotification({
+    type: 'success',
+    title: 'File CSV Berhasil Diunduh!',
+    subtitle: 'Ekspor Data Transaksi',
+    stats: [
+      { label: 'Jumlah Baris', value: state.filteredTransactions.length.toLocaleString('id-ID') + ' Baris', highlight: true },
+      { label: 'Nama File', value: filename.slice(0, 18) + '...' }
+    ],
+    duration: 4000
+  });
 }
