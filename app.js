@@ -195,7 +195,7 @@ function loadDashboardData() {
       populateFilterDropdowns(state.transactions);
       applyFilters();
     }
-    badgeText.textContent = 'Data Siap (Offline & Online)';
+    badgeText.textContent = 'Terakhir Diperbarui: 07 Sep 2026, 17:14 WIB';
     return;
   }
 
@@ -241,14 +241,16 @@ async function syncDataDirectFromGoogleSheets() {
 
     parseAndApplySummaryCSV(csvText);
 
-    badgeText.textContent = 'Data Diperbarui Langsung!';
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+    badgeText.textContent = `Diperbarui Langsung (${timeStr})`;
     badge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
     badge.style.color = '#10b981';
   } catch (err) {
     console.error('Google Sheets sync notice:', err);
     // If CORS prevents direct browser fetch on file://, inform gracefully:
     alert('Informasi Sinkronisasi:\n\nJika membuka file HTML langsung secara lokal (file://), browser membatasi permintaan CORS eksternal langsung ke Google Sheets. Anda dapat menggunakan data yang sudah tersimpan rapi atau membuka via web hosting / server static.\n\nData lokal Anda tetap 100% lengkap dan siap digunakan.');
-    badgeText.textContent = 'Data Siap (Offline & Online)';
+    badgeText.textContent = 'Terakhir Diperbarui: 07 Sep 2026, 17:14 WIB';
     badge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
     badge.style.color = '#10b981';
   }
