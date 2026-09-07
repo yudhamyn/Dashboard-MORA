@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Monitoring Transfer & Summary EBDI</title>
+  <meta name="description" content="Dashboard Eksekutif dan Operasional Keuangan Transfer EBDI - Monitoring Cash Flow, Biaya Wilayah, dan Rekapitulasi Proyek">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo-mark">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">EBDI Operations Dashboard</div>
+        <div class="brand-subtitle">Financial Monitoring & Reimbursement Analytics (Pure Web Base)</div>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="sync-badge" id="syncStatusBadge">
+        <span class="pulse-dot"></span>
+        <span id="syncStatusText">Data Siap (Offline & Online)</span>
+      </div>
+      <button class="btn btn-secondary" id="btnSyncData" title="Sinkronisasi Ulang Data Langsung dari Google Sheets">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+        </svg>
+        <span>Refresh Data</span>
+      </button>
+      <button class="theme-toggle" id="themeToggle" title="Ganti Tema (Dark / Light)">
+        <svg id="themeIconSun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs-container">
+    <div class="nav-tabs" role="tablist">
+      <button class="tab-btn active" data-tab="tab-overview" role="tab" id="tabOverviewBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        <span>Executive Summary</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-cashflow" role="tab" id="tabCashflowBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+        <span>Cash Flow Bulanan</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-costdetail" role="tab" id="tabCostDetailBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+        <span>Cost Detail (Category x Region)</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-pricematrix" role="tab" id="tabPriceMatrixBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Rekapitulasi Price</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-transactions" role="tab" id="tabTransactionsBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>Detail Transaksi (23.6K+)</span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    
+    <!-- TAB 1: EXECUTIVE SUMMARY -->
+    <section id="tab-overview" class="tab-pane active">
+      <!-- Section 1: KPI Top Cards -->
+      <div class="kpi-grid">
+        <!-- Card 1: Total Kredit -->
+        <div class="kpi-card accent-primary">
+          <div class="kpi-header">
+            <span class="kpi-label">Total Kredit Masuk</span>
+            <span class="kpi-icon-badge bg-primary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            </span>
+          </div>
+          <div class="kpi-value" id="kpiTotalKredit">Rp 27,786,762,165</div>
+          <div class="kpi-footer">
+            <span class="badge badge-success">Dana Masuk</span>
+            <span class="kpi-subtext">Sumbagja + Ebdi + Nabila</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Cash OUT -->
+        <div class="kpi-card accent-danger">
+          <div class="kpi-header">
+            <span class="kpi-label">Total Cash Out</span>
+            <span class="kpi-icon-badge bg-danger">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+            </span>
+          </div>
+          <div class="kpi-value" id="kpiCashOut">Rp 27,701,137,398</div>
+          <div class="kpi-footer">
+            <span class="badge badge-danger">Realisasi Pengeluaran</span>
+            <span class="kpi-subtext">Operasional Proyek</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Sisa Kredit -->
+        <div class="kpi-card accent-success">
+          <div class="kpi-header">
+            <span class="kpi-label">Sisa Saldo Kredit</span>
+            <span class="kpi-icon-badge bg-success">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            </span>
+          </div>
+          <div class="kpi-value text-success" id="kpiSisaKredit">Rp 85,624,766</div>
+          <div class="kpi-footer">
+            <span class="badge badge-info">Surplus Saldo</span>
+            <span class="kpi-subtext">Total Kredit - Cash Out</span>
+          </div>
+        </div>
+
+        <!-- Card 4: Rekening Bank (BCA & Mandiri) -->
+        <div class="kpi-card accent-warning">
+          <div class="kpi-header">
+            <span class="kpi-label">Rincian Rekening Bank</span>
+            <span class="kpi-icon-badge bg-warning">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            </span>
+          </div>
+          <div class="bank-balances">
+            <div class="bank-row">
+              <div class="bank-name">
+                <span class="bank-dot bca-dot"></span>
+                <strong>BCA</strong>
+              </div>
+              <div class="bank-val" id="kpiBca">Rp 3,446,342</div>
+            </div>
+            <div class="bank-row">
+              <div class="bank-name">
+                <span class="bank-dot mandiri-dot"></span>
+                <strong>MANDIRI</strong>
+              </div>
+              <div class="bank-val" id="kpiMandiri">Rp 82,178,424</div>
+            </div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-subtext">Total Bank: <strong id="kpiTotalBank">Rp 85,624,766</strong></span>
+          </div>
+        </div>
+
+        <!-- Card 5: Today's Cost -->
+        <div class="kpi-card accent-purple">
+          <div class="kpi-header">
+            <div class="today-title-group">
+              <span class="kpi-label">Today's Cost</span>
+              <span class="today-date-badge" id="todayCostDate">06-Sep-26</span>
+            </div>
+            <span class="kpi-icon-badge bg-purple">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </span>
+          </div>
+          <div class="kpi-value text-purple" id="todayCostAmount">Rp 16,380,500</div>
+          <div class="kpi-footer">
+            <span class="badge badge-purple" id="todayCostTxCount">16 Transaksi</span>
+            <span class="kpi-subtext">Pencatatan Hari Terakhir</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Charts Row -->
+      <div class="charts-row">
+        <!-- Cash Flow Bar & Line Chart -->
+        <div class="chart-card flex-2">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Tren Cash Flow Bulanan</h2>
+              <p class="card-subtitle">Perbandingan Total Kredit Masuk vs Realisasi Cash Out (Bulan 8 2025 - Bulan 9 2026)</p>
+            </div>
+            <div class="chart-actions">
+              <span class="legend-indicator"><span class="color-box bg-kredit"></span> Kredit</span>
+              <span class="legend-indicator"><span class="color-box bg-cashout"></span> Cash Out</span>
+            </div>
+          </div>
+          <div class="chart-body">
+            <canvas id="chartCashFlowOverview"></canvas>
+          </div>
+        </div>
+
+        <!-- Category Cost Donut Chart -->
+        <div class="chart-card flex-1">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Proporsi Biaya per Kategori</h2>
+              <p class="card-subtitle">Berdasarkan data Cost Detail Summary EBDI</p>
+            </div>
+          </div>
+          <div class="chart-body">
+            <canvas id="chartCategoryDonut"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Region Distribution & Top Summary -->
+      <div class="charts-row">
+        <div class="chart-card flex-1">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Distribusi Biaya per Wilayah (Cost Detail)</h2>
+              <p class="card-subtitle">Total realisasi operasional tiap regional</p>
+            </div>
+          </div>
+          <div class="chart-body">
+            <canvas id="chartRegionBars"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card flex-1">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Peringkat 5 Pengeluaran Terbesar</h2>
+              <p class="card-subtitle">Kategori dengan akumulasi biaya tertinggi</p>
+            </div>
+          </div>
+          <div class="card-body top-categories-list" id="topCategoriesList">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: CASH FLOW BULANAN -->
+    <section id="tab-cashflow" class="tab-pane">
+      <div class="content-card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Tabel Rekapitulasi Cash Flow Bulanan</h2>
+            <p class="card-subtitle">Data resmi dari sheet <code>Summary EBDI</code> (Bulan 8 2025 s/d Bulan 9 2026)</p>
+          </div>
+          <button class="btn btn-secondary" onclick="exportTableToCSV('tableCashFlow', 'CashFlow_EBDI.csv')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Export CSV</span>
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="tableCashFlow">
+            <thead>
+              <tr>
+                <th>BULAN</th>
+                <th class="text-right">SUM OF KREDIT SUMBAGJA</th>
+                <th class="text-right">SUM OF KREDIT EBDI</th>
+                <th class="text-right">KREDIT NABILA</th>
+                <th class="text-right">TOTAL KREDIT</th>
+                <th class="text-right">CASH OUT</th>
+                <th class="text-right">SELISIH / NET</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyCashFlow">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="chart-card mt-4">
+        <div class="card-header">
+          <h2 class="card-title">Visualisasi Komparasi Kredit vs Pengeluaran per Bulan</h2>
+        </div>
+        <div class="chart-body tall-chart">
+          <canvas id="chartCashFlowDetail"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: COST DETAIL MATRIX (CATEGORY X REGION) -->
+    <section id="tab-costdetail" class="tab-pane">
+      <div class="content-card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Matrix Cost Detail (Category × Region)</h2>
+            <p class="card-subtitle">Tabel silang alokasi pengeluaran per kategori kegiatan terhadap seluruh region</p>
+          </div>
+          <button class="btn btn-secondary" onclick="exportTableToCSV('tableCostDetail', 'CostDetail_Category_Region.csv')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Export CSV</span>
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table matrix-table" id="tableCostDetail">
+            <thead>
+              <tr id="theadCostDetail">
+                <!-- Dynamically populated -->
+              </tr>
+            </thead>
+            <tbody id="tbodyCostDetail">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: REKAPITULASI PRICE -->
+    <section id="tab-pricematrix" class="tab-pane">
+      <div class="grid-2-col">
+        <!-- Sum of Price per Region -->
+        <div class="content-card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">SUM of PRICE per Region</h2>
+              <p class="card-subtitle">Ringkasan harga per wilayah operasional</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" id="tablePriceRegion">
+              <thead>
+                <tr>
+                  <th>REGION</th>
+                  <th class="text-right">SUM OF PRICE</th>
+                  <th class="text-right">PERSENTASE</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyPriceRegion">
+                <!-- Populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sum of Price per Bulan -->
+        <div class="content-card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">SUM of PRICE per Bulan</h2>
+              <p class="card-subtitle">Ringkasan harga operasional bulanan</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" id="tablePriceBulan">
+              <thead>
+                <tr>
+                  <th>BULAN</th>
+                  <th class="text-right">SUM OF PRICE</th>
+                  <th class="text-right">SHARE</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyPriceBulan">
+                <!-- Populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sum of Price: Category x Region Pivot -->
+      <div class="content-card mt-4">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">SUM of PRICE (Category × Region)</h2>
+            <p class="card-subtitle">Matriks harga total per kategori kegiatan dan region</p>
+          </div>
+          <button class="btn btn-secondary" onclick="exportTableToCSV('tablePriceCatReg', 'SumOfPrice_CatReg.csv')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Export CSV</span>
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table matrix-table" id="tablePriceCatReg">
+            <thead>
+              <tr id="theadPriceCatReg">
+                <!-- Populated -->
+              </tr>
+            </thead>
+            <tbody id="tbodyPriceCatReg">
+              <!-- Populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: DETAIL TRANSAKSI (TRANSFER EBDI) -->
+    <section id="tab-transactions" class="tab-pane">
+      <div class="content-card">
+        <div class="card-header flex-wrap-mobile">
+          <div>
+            <h2 class="card-title">Data Transaksi Transfer EBDI</h2>
+            <p class="card-subtitle">Pencarian, pemfilteran, dan peninjauan detail dari total <strong>23.624</strong> transaksi real</p>
+          </div>
+          <div class="table-actions">
+            <button class="btn btn-primary" id="btnExportFilteredTx">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Export Hasil Filter</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Controls Bar -->
+        <div class="filter-bar">
+          <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="txSearchInput" placeholder="Cari Site ID, Site Name, PIC, SOW, atau Vendor...">
+            <button class="clear-btn" id="btnClearSearch" title="Hapus pencarian">&times;</button>
+          </div>
+
+          <div class="filter-group">
+            <select id="filterRegion" class="select-control">
+              <option value="">Semua Region</option>
+            </select>
+            <select id="filterCategory" class="select-control">
+              <option value="">Semua Kategori</option>
+            </select>
+            <select id="filterVendor" class="select-control">
+              <option value="">Semua Vendor</option>
+            </select>
+            <select id="filterBulan" class="select-control">
+              <option value="">Semua Bulan</option>
+            </select>
+            <select id="filterTransferBy" class="select-control">
+              <option value="">Transfer By</option>
+            </select>
+            <button class="btn btn-ghost" id="btnResetFilters">Reset Filter</button>
+          </div>
+        </div>
+
+        <!-- Active Filter Summary & Result Stats -->
+        <div class="filter-stats-bar">
+          <div>
+            Menampilkan <strong id="txFilteredCount">0</strong> dari <span id="txTotalCount">23,624</span> transaksi
+            <span class="stat-separator">•</span>
+            Total Nominal: <strong class="text-success" id="txFilteredSum">Rp 0</strong>
+          </div>
+          <div class="page-size-selector">
+            <span>Baris per halaman:</span>
+            <select id="pageSizeSelect" class="select-sm">
+              <option value="15">15</option>
+              <option value="25" selected>25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Transactions Table -->
+        <div class="table-responsive">
+          <table class="data-table table-hover" id="tableTransactions">
+            <thead>
+              <tr>
+                <th width="50">NO</th>
+                <th>TANGGAL</th>
+                <th>VENDOR / PROG</th>
+                <th>REGION</th>
+                <th>KATEGORI</th>
+                <th>SITE ID / NAME</th>
+                <th>PIC</th>
+                <th class="text-right">NOMINAL</th>
+                <th>TRANSFER BY</th>
+                <th>STATUS</th>
+                <th width="70">AKSI</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyTransactions">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="pagination-bar">
+          <div class="pagination-info" id="paginationInfo">
+            Halaman 1 dari 1
+          </div>
+          <div class="pagination-controls">
+            <button class="btn btn-sm btn-secondary" id="btnFirstPage" title="Halaman Pertama">&laquo;</button>
+            <button class="btn btn-sm btn-secondary" id="btnPrevPage" title="Sebelumnya">&lsaquo; Prev</button>
+            <span class="current-page-badge" id="currentPageBadge">1</span>
+            <button class="btn btn-sm btn-secondary" id="btnNextPage" title="Berikutnya">Next &rsaquo;</button>
+            <button class="btn btn-sm btn-secondary" id="btnLastPage" title="Halaman Terakhir">&raquo;</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal Detail Transaksi -->
+  <div class="modal-overlay" id="txDetailModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="modalTitle">Detail Transaksi</h3>
+          <p class="modal-subtitle" id="modalSubtitle">Rincian Scope of Work (SOW) & Data Pengajuan</p>
+        </div>
+        <button class="modal-close" id="btnModalClose">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Filled dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnModalCloseFooter">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. Local Chart.js library (No CDN / No Internet Required) -->
+  <script src="chart.min.js"></script>
+  <!-- 2. Pre-bundled Data (No Server / No Python Required - works offline & on file://) -->
+  <script src="data.js"></script>
+  <!-- 3. Application Logic with Direct Google Sheets Sync -->
+  <script src="app.js"></script>
+</body>
+</html>

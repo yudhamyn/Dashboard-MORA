@@ -1,0 +1,1315 @@
+{
+  "today_cost": {
+    "date": "06-Sep-26",
+    "total_transaction": 16,
+    "total_cost": "Rp 16,380,500",
+    "total_cost_num": 16380500
+  },
+  "balances": {
+    "total_kredit": "Rp 27,786,762,165",
+    "total_kredit_num": 27786762165,
+    "cash_out": "Rp 27,701,137,398",
+    "cash_out_num": 27701137398,
+    "sisa_kredit": "Rp 85,624,766",
+    "sisa_kredit_num": 85624766,
+    "bca": "Rp 3,446,342",
+    "bca_num": 3446342,
+    "mandiri": "Rp 82,178,424",
+    "mandiri_num": 82178424
+  },
+  "cash_flow": [
+    {
+      "bulan": "Bulan 8 2025",
+      "kredit_sumbagja": "Rp 1,035,759,497",
+      "kredit_sumbagja_num": 1035759497,
+      "kredit_ebdi": "Rp -",
+      "kredit_ebdi_num": 0,
+      "kredit_nabila": "Rp -",
+      "kredit_nabila_num": 0,
+      "cash_out": "Rp 1,035,758,897",
+      "cash_out_num": 1035758897
+    },
+    {
+      "bulan": "Bulan 9 2025",
+      "kredit_sumbagja": "Rp -",
+      "kredit_sumbagja_num": 0,
+      "kredit_ebdi": "Rp 100,000,000",
+      "kredit_ebdi_num": 100000000,
+      "kredit_nabila": "Rp 850,088,130",
+      "kredit_nabila_num": 850088130,
+      "cash_out": "Rp 938,667,790",
+      "cash_out_num": 938667790
+    },
+    {
+      "bulan": "Bulan 10 2025",
+      "kredit_sumbagja": "Rp -",
+      "kredit_sumbagja_num": 0,
+      "kredit_ebdi": "Rp 528,700,000",
+      "kredit_ebdi_num": 528700000,
+      "kredit_nabila": "Rp 2,300,300,000",
+      "kredit_nabila_num": 2300300000,
+      "cash_out": "Rp 2,699,784,310",
+      "cash_out_num": 2699784310
+    },
+    {
+      "bulan": "Bulan 11 2025",
+      "kredit_sumbagja": "Rp -",
+      "kredit_sumbagja_num": 0,
+      "kredit_ebdi": "Rp -",
+      "kredit_ebdi_num": 0,
+      "kredit_nabila": "Rp 2,017,763,600",
+      "kredit_nabila_num": 2017763600,
+      "cash_out": "Rp 1,958,336,397",
+      "cash_out_num": 1958336397
+    },
+    {
+      "bulan": "Bulan 12 2025",
+      "kredit_sumbagja": "Rp -",
+      "kredit_sumbagja_num": 0,
+      "kredit_ebdi": "Rp -",
+      "kredit_ebdi_num": 0,
+      "kredit_nabila": "Rp 2,607,618,385",
+      "kredit_nabila_num": 2607618385,
+      "cash_out": "Rp 2,630,860,665",
+      "cash_out_num": 2630860665
+    },
+    {
+      "bulan": "Bulan 1 2026",
+      "kredit_sumbagja": "Rp -",
+      "kredit_sumbagja_num": 0,
+      "kredit_ebdi": "Rp -",
+      "kredit_ebdi_num": 0,
+      "kredit_nabila": "Rp 2,308,808,000",
+      "kredit_nabila_num": 2308808000,
+      "cash_out": "Rp 2,483,804,792",
+      "cash_out_num": 2483804792
+    },
+    {
+      "bulan": "Bulan 2 2026",
+      "kredit_sumbagja": "Rp 192,870,000.00",
+      "kredit_sumbagja_num": 192870000,
+      "kredit_ebdi": "Rp -",
+      "kredit_ebdi_num": 0,
+      "kredit_nabila": "Rp 2,745,514,667",
+      "kredit_nabila_num": 2745514667,
+      "cash_out": "Rp 2,777,972,136",
+      "cash_out_num": 2777972136
+    },
+    {
+      "bulan": "Bulan 3 2026",
+      "kredit_sumbagja": "Rp -",
+      "kredit_sumbagja_num": 0,
+      "kredit_ebdi": "Rp 50,000,000",
+      "kredit_ebdi_num": 50000000,
+      "kredit_nabila": "Rp 2,265,350,000",
+      "kredit_nabila_num": 2265350000,
+      "cash_out": "Rp 2,413,527,398",
+      "cash_out_num": 2413527398
+    },
+    {
+      "bulan": "Bulan 4 2026",
+      "kredit_sumbagja": "Rp -",
+      "kredit_sumbagja_num": 0,
+      "kredit_ebdi": "Rp -",
+      "kredit_ebdi_num": 0,
+      "kredit_nabila": "Rp 2,009,565,337",
+      "kredit_nabila_num": 2009565337,
+      "cash_out": "Rp 2,038,902,212",
+      "cash_out_num": 2038902212
+    },
+    {
+      "bulan": "Bulan 5 2026",
+      "kredit_sumbagja": "Rp 10,005,000.00",
+      "kredit_sumbagja_num": 10005000,
+      "kredit_ebdi": "Rp 462,719,500",
+      "kredit_ebdi_num": 462719500,
+      "kredit_nabila": "Rp 2,974,650,000",
+      "kredit_nabila_num": 2974650000,
+      "cash_out": "Rp 3,532,119,695",
+      "cash_out_num": 3532119695
+    },
+    {
+      "bulan": "Bulan 6 2026",
+      "kredit_sumbagja": "Rp -",
+      "kredit_sumbagja_num": 0,
+      "kredit_ebdi": "Rp -",
+      "kredit_ebdi_num": 0,
+      "kredit_nabila": "Rp1,902,850,000",
+      "kredit_nabila_num": 1902850000,
+      "cash_out": "Rp 1,782,972,943",
+      "cash_out_num": 1782972943
+    },
+    {
+      "bulan": "Bulan 7 2026",
+      "kredit_sumbagja": "Rp -",
+      "kredit_sumbagja_num": 0,
+      "kredit_ebdi": "Rp -",
+      "kredit_ebdi_num": 0,
+      "kredit_nabila": "Rp1,806,250,049",
+      "kredit_nabila_num": 1806250049,
+      "cash_out": "Rp 1,714,506,561",
+      "cash_out_num": 1714506561
+    },
+    {
+      "bulan": "Bulan 8 2026",
+      "kredit_sumbagja": "Rp -",
+      "kredit_sumbagja_num": 0,
+      "kredit_ebdi": "Rp -",
+      "kredit_ebdi_num": 0,
+      "kredit_nabila": "Rp1,253,300,000",
+      "kredit_nabila_num": 1253300000,
+      "cash_out": "Rp 1,393,675,962",
+      "cash_out_num": 1393675962
+    },
+    {
+      "bulan": "Bulan 9 2026",
+      "kredit_sumbagja": "Rp -",
+      "kredit_sumbagja_num": 0,
+      "kredit_ebdi": "Rp -",
+      "kredit_ebdi_num": 0,
+      "kredit_nabila": "Rp364,650,000",
+      "kredit_nabila_num": 364650000,
+      "cash_out": "Rp 300,247,640",
+      "cash_out_num": 300247640
+    },
+    {
+      "bulan": "Grand Total",
+      "kredit_sumbagja": "Rp 1,238,634,497",
+      "kredit_sumbagja_num": 1238634497,
+      "kredit_ebdi": "Rp 1,141,419,500",
+      "kredit_ebdi_num": 1141419500,
+      "kredit_nabila": "Rp25,406,708,168",
+      "kredit_nabila_num": 25406708168,
+      "cash_out": "Rp 27,701,137,398",
+      "cash_out_num": 27701137398
+    }
+  ],
+  "cost_detail": {
+    "regions": [
+      "ADMIN",
+      "BALNUS",
+      "CENTRAL SUMATRA",
+      "CENTRAL SUMATRA INTERNAL",
+      "HQ",
+      "JABO",
+      "JATENG",
+      "SULAWESI",
+      "Grand Total"
+    ],
+    "rows": [
+      {
+        "category": "AKOMODASI",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp 183,210,000",
+            "num": 183210000
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp 508,194,772",
+            "num": 508194772
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "Rp 8,550,000",
+            "num": 8550000
+          },
+          "HQ": {
+            "text": "",
+            "num": 0
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "Rp 174,803,576",
+            "num": 174803576
+          },
+          "SULAWESI": {
+            "text": "Rp 128,685,000",
+            "num": 128685000
+          },
+          "Grand Total": {
+            "text": "Rp 1,003,443,348",
+            "num": 1003443348
+          }
+        }
+      },
+      {
+        "category": "BBM",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp 330,335,250",
+            "num": 330335250
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp 779,568,500",
+            "num": 779568500
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "Rp 8,600,000",
+            "num": 8600000
+          },
+          "HQ": {
+            "text": "",
+            "num": 0
+          },
+          "JABO": {
+            "text": "Rp 150,000",
+            "num": 150000
+          },
+          "JATENG": {
+            "text": "Rp 117,305,600",
+            "num": 117305600
+          },
+          "SULAWESI": {
+            "text": "Rp 105,620,090",
+            "num": 105620090
+          },
+          "Grand Total": {
+            "text": "Rp 1,341,579,440",
+            "num": 1341579440
+          }
+        }
+      },
+      {
+        "category": "BOP",
+        "values": {
+          "ADMIN": {
+            "text": "Rp 104,666,381",
+            "num": 104666381
+          },
+          "BALNUS": {
+            "text": "Rp 1,689,007,528",
+            "num": 1689007528
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp 4,275,509,741",
+            "num": 4275509741
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "Rp 13,578,000",
+            "num": 13578000
+          },
+          "HQ": {
+            "text": "Rp 357,525,864",
+            "num": 357525864
+          },
+          "JABO": {
+            "text": "Rp 4,100,000",
+            "num": 4100000
+          },
+          "JATENG": {
+            "text": "Rp 1,495,272,882",
+            "num": 1495272882
+          },
+          "SULAWESI": {
+            "text": "Rp 475,022,957",
+            "num": 475022957
+          },
+          "Grand Total": {
+            "text": "Rp 8,414,683,353",
+            "num": 8414683353
+          }
+        }
+      },
+      {
+        "category": "COMCASE",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp 3,350,000",
+            "num": 3350000
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp 137,900,000",
+            "num": 137900000
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "Rp 4,800,000",
+            "num": 4800000
+          },
+          "HQ": {
+            "text": "",
+            "num": 0
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "Rp 45,700,000",
+            "num": 45700000
+          },
+          "SULAWESI": {
+            "text": "Rp 1,200,000",
+            "num": 1200000
+          },
+          "Grand Total": {
+            "text": "Rp 192,950,000",
+            "num": 192950000
+          }
+        }
+      },
+      {
+        "category": "FREELANCE",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp 1,324,100,000",
+            "num": 1324100000
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp 250,000",
+            "num": 250000
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "",
+            "num": 0
+          },
+          "HQ": {
+            "text": "Rp 157,000,000",
+            "num": 157000000
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "Rp 91,831,000",
+            "num": 91831000
+          },
+          "SULAWESI": {
+            "text": "",
+            "num": 0
+          },
+          "Grand Total": {
+            "text": "Rp 1,573,181,000",
+            "num": 1573181000
+          }
+        }
+      },
+      {
+        "category": "INSENTIVE",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp 26,666,333",
+            "num": 26666333
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp 362,868,666",
+            "num": 362868666
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "",
+            "num": 0
+          },
+          "HQ": {
+            "text": "",
+            "num": 0
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "Rp 2,666,667",
+            "num": 2666667
+          },
+          "SULAWESI": {
+            "text": "Rp 17,016,667",
+            "num": 17016667
+          },
+          "Grand Total": {
+            "text": "Rp 409,218,333",
+            "num": 409218333
+          }
+        }
+      },
+      {
+        "category": "KASBON",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp 203,908,900",
+            "num": 203908900
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp 317,350,000",
+            "num": 317350000
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "",
+            "num": 0
+          },
+          "HQ": {
+            "text": "Rp 500,000",
+            "num": 500000
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "Rp 138,585,000",
+            "num": 138585000
+          },
+          "SULAWESI": {
+            "text": "Rp 77,565,000",
+            "num": 77565000
+          },
+          "Grand Total": {
+            "text": "Rp 737,908,900",
+            "num": 737908900
+          }
+        }
+      },
+      {
+        "category": "KREDIT",
+        "values": {
+          "ADMIN": {
+            "text": "Rp -",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "",
+            "num": 0
+          },
+          "CENTRAL SUMATRA": {
+            "text": "",
+            "num": 0
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "",
+            "num": 0
+          },
+          "HQ": {
+            "text": "",
+            "num": 0
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "",
+            "num": 0
+          },
+          "SULAWESI": {
+            "text": "",
+            "num": 0
+          },
+          "Grand Total": {
+            "text": "Rp -",
+            "num": 0
+          }
+        }
+      },
+      {
+        "category": "MATERIAL",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp 280,412,000",
+            "num": 280412000
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp 852,620,750",
+            "num": 852620750
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "",
+            "num": 0
+          },
+          "HQ": {
+            "text": "Rp 10,000,000",
+            "num": 10000000
+          },
+          "JABO": {
+            "text": "Rp 3,000,000",
+            "num": 3000000
+          },
+          "JATENG": {
+            "text": "",
+            "num": 0
+          },
+          "SULAWESI": {
+            "text": "",
+            "num": 0
+          },
+          "Grand Total": {
+            "text": "Rp 1,146,032,750",
+            "num": 1146032750
+          }
+        }
+      },
+      {
+        "category": "RENTAL MOBIL",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp 771,100,000",
+            "num": 771100000
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp 866,950,000",
+            "num": 866950000
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "",
+            "num": 0
+          },
+          "HQ": {
+            "text": "",
+            "num": 0
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "Rp 303,500,000",
+            "num": 303500000
+          },
+          "SULAWESI": {
+            "text": "Rp 376,800,000",
+            "num": 376800000
+          },
+          "Grand Total": {
+            "text": "Rp 2,318,350,000",
+            "num": 2318350000
+          }
+        }
+      },
+      {
+        "category": "SALARY",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp 2,814,942,667",
+            "num": 2814942667
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp 4,615,877,002",
+            "num": 4615877002
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "",
+            "num": 0
+          },
+          "HQ": {
+            "text": "Rp 5,000,000",
+            "num": 5000000
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "Rp 1,481,281,662",
+            "num": 1481281662
+          },
+          "SULAWESI": {
+            "text": "Rp 1,173,122,493",
+            "num": 1173122493
+          },
+          "Grand Total": {
+            "text": "Rp 10,090,223,824",
+            "num": 10090223824
+          }
+        }
+      },
+      {
+        "category": "TOOLS",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp 145,984,500",
+            "num": 145984500
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp 157,920,000",
+            "num": 157920000
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "",
+            "num": 0
+          },
+          "HQ": {
+            "text": "Rp 17,852,000",
+            "num": 17852000
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "Rp 149,309,950",
+            "num": 149309950
+          },
+          "SULAWESI": {
+            "text": "",
+            "num": 0
+          },
+          "Grand Total": {
+            "text": "Rp 471,066,450",
+            "num": 471066450
+          }
+        }
+      }
+    ],
+    "grand_total": {
+      "ADMIN": {
+        "text": "Rp 104,666,381",
+        "num": 104666381
+      },
+      "BALNUS": {
+        "text": "Rp 7,773,017,178",
+        "num": 7773017178
+      },
+      "CENTRAL SUMATRA": {
+        "text": "Rp 12,875,009,431",
+        "num": 12875009431
+      },
+      "CENTRAL SUMATRA INTERNAL": {
+        "text": "Rp 35,528,000",
+        "num": 35528000
+      },
+      "HQ": {
+        "text": "Rp 547,877,864",
+        "num": 547877864
+      },
+      "JABO": {
+        "text": "Rp 7,250,000",
+        "num": 7250000
+      },
+      "JATENG": {
+        "text": "Rp 4,000,256,337",
+        "num": 4000256337
+      },
+      "SULAWESI": {
+        "text": "Rp 2,355,032,207",
+        "num": 2355032207
+      },
+      "Grand Total": {
+        "text": "Rp 27,698,637,398",
+        "num": 27698637398
+      }
+    }
+  },
+  "price_by_region": [
+    {
+      "region": "ADMIN",
+      "price": "Rp 2,318,390",
+      "price_num": 2318390
+    },
+    {
+      "region": "BALNUS",
+      "price": "Rp 157,822,919",
+      "price_num": 157822919
+    },
+    {
+      "region": "CENTRAL SUMATRA",
+      "price": "Rp 159,310,500",
+      "price_num": 159310500
+    },
+    {
+      "region": "JATENG",
+      "price": "Rp 135,074,423",
+      "price_num": 135074423
+    },
+    {
+      "region": "SULAWESI",
+      "price": "Rp 70,264,040",
+      "price_num": 70264040
+    },
+    {
+      "region": "Grand Total",
+      "price": "Rp 524,790,272",
+      "price_num": 524790272
+    }
+  ],
+  "price_by_bulan": [
+    {
+      "bulan": "Bulan 1 2026",
+      "price": "Rp 2,483,804,792",
+      "price_num": 2483804792
+    },
+    {
+      "bulan": "Bulan 2 2026",
+      "price": "Rp 2,777,972,136",
+      "price_num": 2777972136
+    },
+    {
+      "bulan": "Bulan 3 2026",
+      "price": "Rp 2,413,527,398",
+      "price_num": 2413527398
+    },
+    {
+      "bulan": "Bulan 4 2026",
+      "price": "Rp 2,038,902,212",
+      "price_num": 2038902212
+    },
+    {
+      "bulan": "Bulan 5 2026",
+      "price": "Rp 3,532,119,695",
+      "price_num": 3532119695
+    },
+    {
+      "bulan": "Bulan 6 2026",
+      "price": "Rp 1,782,972,943",
+      "price_num": 1782972943
+    },
+    {
+      "bulan": "Bulan 7 2026",
+      "price": "Rp 1,714,506,561",
+      "price_num": 1714506561
+    },
+    {
+      "bulan": "Bulan 8 2026",
+      "price": "Rp 1,393,675,962",
+      "price_num": 1393675962
+    },
+    {
+      "bulan": "Grand Total",
+      "price": "Rp 18,137,481,700",
+      "price_num": 18137481700
+    }
+  ],
+  "price_by_category_region": {
+    "regions": [
+      "ADMIN",
+      "BALNUS",
+      "CENTRAL SUMATRA",
+      "CENTRAL SUMATRA INTERNAL",
+      "HQ",
+      "JABO",
+      "JATENG",
+      "SULAWESI",
+      "Grand Total"
+    ],
+    "rows": [
+      {
+        "category": "AKOMODASI",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp       90,660,000",
+            "num": 90660000
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp       327,987,772",
+            "num": 327987772
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "Rp       8,550,000",
+            "num": 8550000
+          },
+          "HQ": {
+            "text": "",
+            "num": 0
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "Rp38,605,076.00",
+            "num": 38605076
+          },
+          "SULAWESI": {
+            "text": "Rp55,674,000.00",
+            "num": 55674000
+          },
+          "Grand Total": {
+            "text": "Rp       521,476,848",
+            "num": 521476848
+          }
+        }
+      },
+      {
+        "category": "BBM",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp       248,735,450",
+            "num": 248735450
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp       629,156,500",
+            "num": 629156500
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "Rp       8,600,000",
+            "num": 8600000
+          },
+          "HQ": {
+            "text": "",
+            "num": 0
+          },
+          "JABO": {
+            "text": "Rp150,000.00",
+            "num": 150000
+          },
+          "JATENG": {
+            "text": "Rp31,434,700.00",
+            "num": 31434700
+          },
+          "SULAWESI": {
+            "text": "Rp55,513,090.00",
+            "num": 55513090
+          },
+          "Grand Total": {
+            "text": "Rp       973,589,740",
+            "num": 973589740
+          }
+        }
+      },
+      {
+        "category": "BOP",
+        "values": {
+          "ADMIN": {
+            "text": "Rp 83,363,841",
+            "num": 83363841
+          },
+          "BALNUS": {
+            "text": "Rp       840,925,403",
+            "num": 840925403
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp       3,249,547,320",
+            "num": 3249547320
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "Rp       13,578,000",
+            "num": 13578000
+          },
+          "HQ": {
+            "text": "Rp 247,964,063.00",
+            "num": 247964063
+          },
+          "JABO": {
+            "text": "Rp4,100,000.00",
+            "num": 4100000
+          },
+          "JATENG": {
+            "text": "Rp383,494,313.00",
+            "num": 383494313
+          },
+          "SULAWESI": {
+            "text": "Rp279,556,519.00",
+            "num": 279556519
+          },
+          "Grand Total": {
+            "text": "Rp       5,102,529,459",
+            "num": 5102529459
+          }
+        }
+      },
+      {
+        "category": "COMCASE",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp       3,350,000",
+            "num": 3350000
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp       59,550,000",
+            "num": 59550000
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "Rp       4,800,000",
+            "num": 4800000
+          },
+          "HQ": {
+            "text": "",
+            "num": 0
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "Rp4,200,000.00",
+            "num": 4200000
+          },
+          "SULAWESI": {
+            "text": "",
+            "num": 0
+          },
+          "Grand Total": {
+            "text": "Rp       71,900,000",
+            "num": 71900000
+          }
+        }
+      },
+      {
+        "category": "FREELANCE",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp       1,018,420,000",
+            "num": 1018420000
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp       250,000",
+            "num": 250000
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "",
+            "num": 0
+          },
+          "HQ": {
+            "text": "Rp 107,000,000.00",
+            "num": 107000000
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "",
+            "num": 0
+          },
+          "SULAWESI": {
+            "text": "",
+            "num": 0
+          },
+          "Grand Total": {
+            "text": "Rp       1,125,670,000",
+            "num": 1125670000
+          }
+        }
+      },
+      {
+        "category": "INSENTIVE",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "",
+            "num": 0
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp       139,300,000",
+            "num": 139300000
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "",
+            "num": 0
+          },
+          "HQ": {
+            "text": "",
+            "num": 0
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "Rp1,500,000.00",
+            "num": 1500000
+          },
+          "SULAWESI": {
+            "text": "Rp5,600,000.00",
+            "num": 5600000
+          },
+          "Grand Total": {
+            "text": "Rp       146,400,000",
+            "num": 146400000
+          }
+        }
+      },
+      {
+        "category": "KASBON",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp       178,035,000",
+            "num": 178035000
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp       268,400,000",
+            "num": 268400000
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "",
+            "num": 0
+          },
+          "HQ": {
+            "text": "Rp 500,000.00",
+            "num": 500000
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "Rp48,385,000.00",
+            "num": 48385000
+          },
+          "SULAWESI": {
+            "text": "Rp41,815,000.00",
+            "num": 41815000
+          },
+          "Grand Total": {
+            "text": "Rp       537,135,000",
+            "num": 537135000
+          }
+        }
+      },
+      {
+        "category": "MATERIAL",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp       189,064,000",
+            "num": 189064000
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp       851,323,200",
+            "num": 851323200
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "",
+            "num": 0
+          },
+          "HQ": {
+            "text": "",
+            "num": 0
+          },
+          "JABO": {
+            "text": "Rp3,000,000.00",
+            "num": 3000000
+          },
+          "JATENG": {
+            "text": "",
+            "num": 0
+          },
+          "SULAWESI": {
+            "text": "",
+            "num": 0
+          },
+          "Grand Total": {
+            "text": "Rp       1,043,387,200",
+            "num": 1043387200
+          }
+        }
+      },
+      {
+        "category": "RENTAL MOBIL",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp       611,300,000",
+            "num": 611300000
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp       653,950,000",
+            "num": 653950000
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "",
+            "num": 0
+          },
+          "HQ": {
+            "text": "",
+            "num": 0
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "Rp62,800,000.00",
+            "num": 62800000
+          },
+          "SULAWESI": {
+            "text": "Rp188,000,000.00",
+            "num": 188000000
+          },
+          "Grand Total": {
+            "text": "Rp       1,516,050,000",
+            "num": 1516050000
+          }
+        }
+      },
+      {
+        "category": "SALARY",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp       2,022,916,667",
+            "num": 2022916667
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp       3,830,463,669",
+            "num": 3830463669
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "",
+            "num": 0
+          },
+          "HQ": {
+            "text": "Rp 5,000,000.00",
+            "num": 5000000
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "Rp477,019,167.00",
+            "num": 477019167
+          },
+          "SULAWESI": {
+            "text": "Rp631,362,499.33",
+            "num": 631362499
+          },
+          "Grand Total": {
+            "text": "Rp       6,966,762,002",
+            "num": 6966762002
+          }
+        }
+      },
+      {
+        "category": "TOOLS",
+        "values": {
+          "ADMIN": {
+            "text": "",
+            "num": 0
+          },
+          "BALNUS": {
+            "text": "Rp       10,187,500",
+            "num": 10187500
+          },
+          "CENTRAL SUMATRA": {
+            "text": "Rp       117,301,000",
+            "num": 117301000
+          },
+          "CENTRAL SUMATRA INTERNAL": {
+            "text": "",
+            "num": 0
+          },
+          "HQ": {
+            "text": "",
+            "num": 0
+          },
+          "JABO": {
+            "text": "",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "Rp2,592,950.00",
+            "num": 2592950
+          },
+          "SULAWESI": {
+            "text": "",
+            "num": 0
+          },
+          "Grand Total": {
+            "text": "Rp       130,081,450",
+            "num": 130081450
+          }
+        }
+      }
+    ],
+    "grand_total": {
+      "ADMIN": {
+        "text": "Rp 83,363,841",
+        "num": 83363841
+      },
+      "BALNUS": {
+        "text": "Rp       5,213,594,020",
+        "num": 5213594020
+      },
+      "CENTRAL SUMATRA": {
+        "text": "Rp       10,127,229,461",
+        "num": 10127229461
+      },
+      "CENTRAL SUMATRA INTERNAL": {
+        "text": "Rp       35,528,000",
+        "num": 35528000
+      },
+      "HQ": {
+        "text": "Rp 360,464,063.00",
+        "num": 360464063
+      },
+      "JABO": {
+        "text": "Rp7,250,000.00",
+        "num": 7250000
+      },
+      "JATENG": {
+        "text": "Rp1,050,031,206.00",
+        "num": 1050031206
+      },
+      "SULAWESI": {
+        "text": "Rp1,257,521,108.33",
+        "num": 1257521108
+      },
+      "Grand Total": {
+        "text": "Rp       18,137,481,700",
+        "num": 18137481700
+      }
+    }
+  }
+}
