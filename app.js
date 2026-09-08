@@ -53,6 +53,19 @@ function formatISODateToDisplay(isoStr) {
   return `${parts[2]} ${months[mIdx] || parts[1]} ${parts[0]}`;
 }
 
+function getLatestTxDateISO(txs) {
+  const list = txs || state.transactions || [];
+  if (!list.length) return '2026-09-07';
+  let latest = '';
+  // Check from the end of the array since transactions are predominantly chronological
+  const checkCount = Math.min(list.length, 300);
+  for (let i = list.length - 1; i >= list.length - checkCount; i--) {
+    const iso = parseTxDateToISO(list[i].date_trf || list[i].date_req);
+    if (iso && iso > latest) latest = iso;
+  }
+  return latest || '2026-09-07';
+}
+
 // Application State
 const state = {
   summary: null,
@@ -68,7 +81,7 @@ const state = {
     startBulan: 'Bulan 8 2025',
     endBulan: 'Bulan 9 2026',
     startDate: '2025-08-01',
-    endDate: '2026-09-06',
+    endDate: '2026-09-07',
     preset: 'all'
   },
   filters: {
@@ -245,7 +258,30 @@ function loadDashboardData() {
   const badge = document.getElementById('syncStatusBadge');
   const badgeText = document.getElementById('syncStatusText');
 
-  const savedRefreshTime = localStorage.getItem('ebdi_last_refresh') || '07 Sep 2026, 17:14 WIB';
+  const savedRefreshTime = localStorage.getItem('ebdi_last_refresh') || '08 Sep 2026, 14:45 WIB';
+
+  // Check if localStorage has newer cached data from a live sync
+  try {
+    const cachedSummary = localStorage.getItem('ebdi_cached_summary');
+    const cachedTxs = localStorage.getItem('ebdi_cached_txs');
+    if (cachedSummary && cachedTxs) {
+      const parsedSum = JSON.parse(cachedSummary);
+      const parsedTxs = JSON.parse(cachedTxs);
+      if (parsedSum && parsedTxs && parsedTxs.length >= 23600) {
+        state.summary = parsedSum;
+        state.transactions = parsedTxs;
+        state.masterFilteredTransactions = parsedTxs;
+        populateFilterDropdowns(state.transactions);
+        populateSummaryUI(state.summary);
+        initMasterFilterControls();
+        applyMasterFilter();
+        badgeText.textContent = 'Terakhir Diperbarui: ' + savedRefreshTime;
+        return;
+      }
+    }
+  } catch (e) {
+    console.warn('Local cache check notice:', e);
+  }
 
   // Check if data is already available via data.js (Pure Web, No Python / Server needed)
   if (window.EBDI_SUMMARY) {
@@ -257,6 +293,7 @@ function loadDashboardData() {
       populateFilterDropdowns(state.transactions);
     }
 
+    populateSummaryUI(state.summary);
     initMasterFilterControls();
     applyMasterFilter();
     badgeText.textContent = 'Terakhir Diperbarui: ' + savedRefreshTime;
@@ -265,17 +302,11 @@ function loadDashboardData() {
 
   // Fallback: If hosted on a server, try fetch
   badgeText.textContent = 'Memuat data...';
-  fetch('data/summary.json')
+  fetch('summary.json')
     .then(res => res.json())
     .then(data => {
       state.summary = data;
-      return fetch('data/transactions.json');
-    })
-    .then(res => res.json())
-    .then(txs => {
-      state.transactions = txs;
-      state.masterFilteredTransactions = txs;
-      populateFilterDropdowns(txs);
+      populateSummaryUI(state.summary);
       initMasterFilterControls();
       applyMasterFilter();
       badgeText.textContent = 'Terakhir Diperbarui: ' + savedRefreshTime;
@@ -357,66 +388,146 @@ function parseSummaryCSV(text) {
     price_by_category_region: { regions: [], rows: [], grand_total: {} }
   };
 
-  // Row 1 is Today's Cost
-  if (rows.length > 1) {
-    const r1 = rows[1];
-    if (r1.length > 3) {
-      summary.today_cost.date = (r1[1] || '').trim() || 'Terbaru';
-      summary.today_cost.total_transaction = parseInt((r1[2] || '0').replace(/[^\d]/g, ''), 10) || 0;
-      summary.today_cost.total_cost = (r1[3] || '').trim();
-      summary.today_cost.total_cost_num = parseCurrency(r1[3]);
+  // 1. Today's Cost
+  for (let i = 0; i < Math.min(15, rows.length); i++) {
+    const rowStr = rows[i].join(' ').toLowerCase();
+    if (rowStr.includes('date') && (rowStr.includes('cost') || rowStr.includes('transaction'))) {
+      const d = rows[i + 1] || [];
+      if (d.length > 3) {
+        summary.today_cost.date = (d[1] || '').trim() || 'Terbaru';
+        summary.today_cost.total_transaction = parseInt((d[2] || '0').replace(/[^\d]/g, ''), 10) || 0;
+        summary.today_cost.total_cost = (d[3] || '').trim();
+        summary.today_cost.total_cost_num = parseCurrency(d[3]);
+      }
+      break;
     }
   }
 
+  // 2. Balances & Cash Flow
+  let inCf = false;
   for (let idx = 0; idx < rows.length; idx++) {
     const r = rows[idx];
+    const firstCell = (r[1] || r[0] || '').trim();
+    const firstCellLower = firstCell.toLowerCase();
     const rowStr = r.join(' ').toLowerCase();
 
-    // Cash flow rows
-    const firstCell = (r[1] || r[0] || '').trim();
-    if (firstCell.startsWith('Bulan ') || firstCell.toLowerCase() === 'grand total') {
-      const bName = firstCell;
-      const sb = (r[2] || '').trim();
-      const eb = (r[3] || '').trim();
-      const nb = (r[4] || '').trim();
-      const co = (r[5] || '').trim();
-
-      if (!summary.cash_flow.some(c => c.bulan === bName)) {
+    // Cash flow section
+    if (rowStr.includes('cash flow')) {
+      inCf = true;
+      continue;
+    }
+    if (inCf) {
+      if (firstCell.startsWith('Bulan ') || firstCell === 'Grand Total') {
         summary.cash_flow.push({
-          bulan: bName,
-          kredit_sumbagja: sb || 'Rp -',
-          kredit_sumbagja_num: parseCurrency(sb),
-          kredit_ebdi: eb || 'Rp -',
-          kredit_ebdi_num: parseCurrency(eb),
-          kredit_nabila: nb || 'Rp -',
-          kredit_nabila_num: parseCurrency(nb),
-          cash_out: co || 'Rp -',
-          cash_out_num: parseCurrency(co)
+          bulan: firstCell,
+          kredit_sumbagja: (r[2] || '').trim(),
+          kredit_sumbagja_num: parseCurrency(r[2]),
+          kredit_ebdi: (r[3] || '').trim(),
+          kredit_ebdi_num: parseCurrency(r[3]),
+          kredit_nabila: (r[4] || '').trim(),
+          kredit_nabila_num: parseCurrency(r[4]),
+          cash_out: (r[5] || '').trim(),
+          cash_out_num: parseCurrency(r[5])
         });
+        if (firstCell === 'Grand Total') inCf = false;
       }
     }
 
     // Balances
-    if (rowStr.includes('total kredit') && !summary.balances.total_kredit_num) {
-      const val = r.find(c => c.toLowerCase().includes('rp')) || r[2] || '';
-      summary.balances.total_kredit = val.trim();
+    if (firstCellLower === 'total kredit' && !summary.balances.total_kredit_num) {
+      const val = (r[2] || r.find(c => c.toLowerCase().includes('rp')) || '').trim();
+      summary.balances.total_kredit = val;
       summary.balances.total_kredit_num = parseCurrency(val);
-    } else if (rowStr.includes('cash out') && !rowStr.includes('flow') && !summary.balances.cash_out_num) {
-      const val = r.find(c => c.toLowerCase().includes('rp')) || r[2] || '';
-      summary.balances.cash_out = val.trim();
+    } else if (firstCellLower === 'cash out' && !summary.balances.cash_out_num) {
+      const val = (r[2] || r.find(c => c.toLowerCase().includes('rp')) || '').trim();
+      summary.balances.cash_out = val;
       summary.balances.cash_out_num = parseCurrency(val);
-    } else if (rowStr.includes('sisa kredit') && !summary.balances.sisa_kredit_num) {
-      const val = r.find(c => c.toLowerCase().includes('rp')) || r[2] || '';
-      summary.balances.sisa_kredit = val.trim();
+    } else if (firstCellLower === 'sisa kredit' && !summary.balances.sisa_kredit_num) {
+      const val = (r[2] || r.find(c => c.toLowerCase().includes('rp')) || '').trim();
+      summary.balances.sisa_kredit = val;
       summary.balances.sisa_kredit_num = parseCurrency(val);
-    } else if (rowStr.includes('bca') && !summary.balances.bca_num) {
-      const val = r.find(c => c.toLowerCase().includes('rp')) || r[2] || '';
-      summary.balances.bca = val.trim();
+    } else if (firstCellLower === 'bca' && !summary.balances.bca_num) {
+      const val = (r[2] || r.find(c => c.toLowerCase().includes('rp')) || '').trim();
+      summary.balances.bca = val;
       summary.balances.bca_num = parseCurrency(val);
-    } else if (rowStr.includes('mandiri') && !summary.balances.mandiri_num) {
-      const val = r.find(c => c.toLowerCase().includes('rp')) || r[2] || '';
-      summary.balances.mandiri = val.trim();
+    } else if (firstCellLower === 'mandiri' && !summary.balances.mandiri_num) {
+      const val = (r[2] || r.find(c => c.toLowerCase().includes('rp')) || '').trim();
+      summary.balances.mandiri = val;
       summary.balances.mandiri_num = parseCurrency(val);
+    }
+  }
+
+  // 3. Cost Detail Matrix
+  const cdIdx = rows.findIndex(r => (r[1] || '').trim().toLowerCase() === 'cost detail');
+  if (cdIdx !== -1 && rows[cdIdx + 2]) {
+    const hdr = rows[cdIdx + 2].map(c => c.trim()).filter(Boolean);
+    summary.cost_detail.regions = hdr.filter(c => c !== 'CATEGORY');
+    for (let i = cdIdx + 3; i < rows.length; i++) {
+      const r = rows[i];
+      const cat = (r[1] || '').trim();
+      if (!cat) continue;
+      const vals = {};
+      summary.cost_detail.regions.forEach((reg, j) => {
+        const colIdx = j + 2;
+        const valStr = (r[colIdx] || '').trim();
+        vals[reg] = { text: valStr, num: parseCurrency(valStr) };
+      });
+      if (cat === 'Grand Total') {
+        summary.cost_detail.grand_total = vals;
+        break;
+      } else {
+        summary.cost_detail.rows.push({ category: cat, values: vals });
+      }
+    }
+  }
+
+  // 4. Price by Region
+  const regIdx = rows.findIndex(r => (r[1] || '').trim().toUpperCase() === 'REGION' && (r[2] || '').trim().toUpperCase().startsWith('SUM'));
+  if (regIdx !== -1) {
+    for (let i = regIdx + 1; i < rows.length; i++) {
+      const r = rows[i];
+      const reg = (r[1] || '').trim();
+      const val = (r[2] || '').trim();
+      if (!reg) continue;
+      summary.price_by_region.push({ region: reg, price: val, price_num: parseCurrency(val) });
+      if (reg === 'Grand Total') break;
+    }
+  }
+
+  // 5. Price by Bulan
+  const blnIdx = rows.findIndex(r => (r[1] || '').trim().toUpperCase() === 'BULAN' && (r[2] || '').trim().toUpperCase().startsWith('SUM'));
+  if (blnIdx !== -1) {
+    for (let i = blnIdx + 1; i < rows.length; i++) {
+      const r = rows[i];
+      const bln = (r[1] || '').trim();
+      const val = (r[2] || '').trim();
+      if (!bln) continue;
+      summary.price_by_bulan.push({ bulan: bln, price: val, price_num: parseCurrency(val) });
+      if (bln === 'Grand Total') break;
+    }
+  }
+
+  // 6. Category x Region Pivot
+  const crIdx = rows.findIndex(r => (r[1] || '').trim().toUpperCase().startsWith('SUM') && (r[2] || '').trim().toUpperCase() === 'REGION');
+  if (crIdx !== -1 && rows[crIdx + 1]) {
+    const crHdr = rows[crIdx + 1].map(c => c.trim()).filter(Boolean);
+    summary.price_by_category_region.regions = crHdr.filter(c => c !== 'CATEGORY');
+    for (let i = crIdx + 2; i < rows.length; i++) {
+      const r = rows[i];
+      const cat = (r[1] || '').trim();
+      if (!cat) continue;
+      const vals = {};
+      summary.price_by_category_region.regions.forEach((reg, j) => {
+        const colIdx = j + 3;
+        const valStr = (r[colIdx] || '').trim();
+        vals[reg] = { text: valStr, num: parseCurrency(valStr) };
+      });
+      if (cat === 'Grand Total') {
+        summary.price_by_category_region.grand_total = vals;
+        break;
+      } else {
+        summary.price_by_category_region.rows.push({ category: cat, values: vals });
+      }
     }
   }
 
@@ -432,19 +543,24 @@ function parseTransferCSV(text) {
     if (!r || r.length < 5) continue;
     const vendor = (r[1] || '').trim();
     const no = (r[0] || '').trim();
-    if (!vendor && !no) continue;
-
     const priceStr = (r[14] || '').trim();
+    const dateTrf = (r[4] || '').trim();
+    const dateReq = (r[3] || '').trim();
+    const category = (r[9] || '').trim();
+    
+    // Retain all valid transactions even without external vendor/no (salary, kasbon, admin fee, etc.)
+    if (!priceStr && !dateTrf && !dateReq && !category && !vendor) continue;
+
     const priceNum = parseCurrency(priceStr);
 
     txs.push({
       no: no,
       vendor: vendor,
       program: (r[2] || '').trim(),
-      date_req: (r[3] || '').trim(),
-      date_trf: (r[4] || '').trim(),
+      date_req: dateReq,
+      date_trf: dateTrf,
       region: (r[8] || '').trim(),
-      category: (r[9] || '').trim(),
+      category: category,
       price: priceStr,
       price_num: priceNum,
       site_id: (r[16] || '').trim(),
@@ -588,7 +704,7 @@ function showToastNotification(options = {}) {
   return { dismiss: dismissToast };
 }
 
-// Direct Sync from Google Sheets via Pure JavaScript (Netlify Proxy & Live GViz)
+// Direct Sync from Google Sheets via Pure JavaScript (Multi-URL Fallback & Live Native CORS)
 async function syncDataDirectFromGoogleSheets() {
   const badge = document.getElementById('syncStatusBadge');
   const badgeText = document.getElementById('syncStatusText');
@@ -596,29 +712,62 @@ async function syncDataDirectFromGoogleSheets() {
   badge.style.borderColor = 'var(--warning)';
   badge.style.color = 'var(--warning)';
 
-  const isHttp = window.location.protocol.startsWith('http');
-  const summaryUrl = isHttp ? '/api/sheets/summary' : 'https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/gviz/tq?tqx=out:csv&gid=1112038042';
-  const transferUrl = isHttp ? '/api/sheets/transfer' : 'https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/gviz/tq?tqx=out:csv&gid=747143276';
+  const ts = Date.now();
+  const summaryUrls = [
+    `https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/export?format=csv&gid=1112038042&t=${ts}`,
+    `/api/sheets/summary?t=${ts}`,
+    `https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/gviz/tq?tqx=out:csv&gid=1112038042&t=${ts}`
+  ];
+
+  const transferUrls = [
+    `https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/export?format=csv&gid=747143276&t=${ts}`,
+    `/api/sheets/transfer?t=${ts}`,
+    `https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/gviz/tq?tqx=out:csv&gid=747143276&t=${ts}`
+  ];
+
+  async function fetchWithFallback(urls, label) {
+    let lastErr = null;
+    for (const u of urls) {
+      try {
+        const res = await fetch(u, { cache: 'no-store' });
+        if (res.ok) {
+          const text = await res.text();
+          if (text && text.length > 50) return text;
+        }
+      } catch (e) {
+        lastErr = e;
+      }
+    }
+    throw new Error(`Gagal mengunduh ${label}: ${lastErr ? lastErr.message : 'Koneksi ditolak'}`);
+  }
 
   try {
     badgeText.textContent = 'Mengunduh Summary EBDI...';
-    const resSummary = await fetch(summaryUrl);
-    if (!resSummary.ok) throw new Error('Summary HTTP ' + resSummary.status);
-    const summaryCsv = await resSummary.text();
+    const summaryCsv = await fetchWithFallback(summaryUrls, 'Summary EBDI');
     const newSummary = parseSummaryCSV(summaryCsv);
     if (newSummary && newSummary.cash_flow && newSummary.cash_flow.length) {
       state.summary = newSummary;
+      populateSummaryUI(state.summary);
     }
 
     badgeText.textContent = 'Mengunduh Transaksi EBDI (23.6K+)...';
-    const resTransfer = await fetch(transferUrl);
-    if (!resTransfer.ok) throw new Error('Transfer HTTP ' + resTransfer.status);
-    const transferCsv = await resTransfer.text();
+    const transferCsv = await fetchWithFallback(transferUrls, 'Transaksi EBDI');
     const newTxs = parseTransferCSV(transferCsv);
     if (newTxs && newTxs.length) {
       state.transactions = newTxs;
       state.masterFilteredTransactions = newTxs;
       populateFilterDropdowns(state.transactions);
+
+      // Dynamically update max date of master filter
+      const latestISO = getLatestTxDateISO(newTxs);
+      const endDateInput = document.getElementById('mfEndDate');
+      if (endDateInput) {
+        endDateInput.max = latestISO;
+        if (state.masterFilter.endDate <= '2026-09-06' || state.masterFilter.preset === 'all' || state.masterFilter.preset === 'latest') {
+          state.masterFilter.endDate = latestISO;
+          endDateInput.value = latestISO;
+        }
+      }
     }
 
     // Re-apply Master Filter
@@ -628,6 +777,14 @@ async function syncDataDirectFromGoogleSheets() {
     const now = new Date();
     const timeStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
     localStorage.setItem('ebdi_last_refresh', timeStr);
+
+    // Save to localStorage cache for offline persistence
+    try {
+      localStorage.setItem('ebdi_cached_summary', JSON.stringify(state.summary));
+      localStorage.setItem('ebdi_cached_txs', JSON.stringify(state.transactions));
+    } catch (e) {
+      console.warn('Storage cache notice:', e);
+    }
 
     badgeText.textContent = 'Terakhir Diperbarui: ' + timeStr;
     badge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
@@ -656,7 +813,7 @@ async function syncDataDirectFromGoogleSheets() {
     });
   } catch (err) {
     console.error('Google Sheets sync notice:', err);
-    const savedTime = localStorage.getItem('ebdi_last_refresh') || '07 Sep 2026, 17:14 WIB';
+    const savedTime = localStorage.getItem('ebdi_last_refresh') || '08 Sep 2026, 14:45 WIB';
     badgeText.textContent = 'Terakhir Diperbarui: ' + savedTime;
     badge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
     badge.style.color = '#10b981';
@@ -665,10 +822,10 @@ async function syncDataDirectFromGoogleSheets() {
     showToastNotification({
       type: isFileProtocol ? 'info' : 'warning',
       title: isFileProtocol ? 'Informasi Sinkronisasi Lokal' : 'Gagal Menghubungi Google Sheets',
-      subtitle: isFileProtocol ? 'Mode Offline / Protokol Berkas' : 'Periksa Koneksi atau Proxy Netlify',
+      subtitle: isFileProtocol ? 'Mode Offline / Protokol Berkas' : 'Periksa Koneksi Internet Anda',
       message: isFileProtocol
-        ? '<p>Saat dibuka secara lokal (<code>file://</code>), browser membatasi CORS langsung ke Google Sheets. Di hosting <strong>Netlify</strong>, proxy <code>_redirects</code> akan otomatis mengatasinya.</p><p style="color:var(--text-primary); font-size:0.8rem; margin-top:4px;">✓ Data lokal Anda tetap <strong>100% lengkap</strong> dan siap digunakan.</p>'
-        : `<p>Gagal menghubungi Google Sheets (${err.message}). Pastikan konfigurasi proxy <code>_redirects</code> sudah aktif di Netlify Anda.</p>`,
+        ? '<p>Saat dibuka secara lokal (<code>file://</code>), browser membatasi CORS langsung ke Google Sheets. Di hosting <strong>Netlify</strong> atau web server, sinkronisasi otomatis berjalan lancar.</p><p style="color:var(--text-primary); font-size:0.8rem; margin-top:4px;">✓ Data lokal Anda tetap <strong>100% lengkap</strong> dan siap digunakan.</p>'
+        : `<p>Gagal menghubungi Google Sheets (${err.message}). Pastikan koneksi internet Anda aktif.</p>`,
       stats: [
         { label: 'Transaksi Tersedia', value: (state.transactions || []).length.toLocaleString('id-ID') + ' Tx', highlight: true },
         { label: 'Data Terakhir', value: savedTime }
@@ -1173,10 +1330,22 @@ function initMasterFilterControls() {
   startSelect.value = state.masterFilter.startBulan || CHRONO_MONTHS[0];
   endSelect.value = state.masterFilter.endBulan || CHRONO_MONTHS[CHRONO_MONTHS.length - 1];
 
+  const maxDate = getLatestTxDateISO(state.transactions);
   const startDateInput = document.getElementById('mfStartDate');
   const endDateInput = document.getElementById('mfEndDate');
-  if (startDateInput) startDateInput.value = state.masterFilter.startDate || '2025-08-01';
-  if (endDateInput) endDateInput.value = state.masterFilter.endDate || '2026-09-06';
+  if (startDateInput) {
+    startDateInput.min = '2025-08-01';
+    startDateInput.max = maxDate;
+    startDateInput.value = state.masterFilter.startDate || '2025-08-01';
+  }
+  if (endDateInput) {
+    endDateInput.min = '2025-08-01';
+    endDateInput.max = maxDate;
+    if (!state.masterFilter.endDate || state.masterFilter.endDate <= '2026-09-06') {
+      state.masterFilter.endDate = maxDate;
+    }
+    endDateInput.value = state.masterFilter.endDate;
+  }
 }
 
 // Master Filter: Event Listeners
@@ -1270,12 +1439,13 @@ function applyMasterFilterPreset(presetKey) {
   });
   state.masterFilter.preset = presetKey;
 
+  const maxDate = getLatestTxDateISO(state.transactions);
   const mf = state.masterFilter;
   if (presetKey === 'all') {
     mf.startBulan = 'Bulan 8 2025';
     mf.endBulan = 'Bulan 9 2026';
     mf.startDate = '2025-08-01';
-    mf.endDate = '2026-09-06';
+    mf.endDate = maxDate;
   } else if (presetKey === '2025') {
     mf.startBulan = 'Bulan 8 2025';
     mf.endBulan = 'Bulan 12 2025';
@@ -1285,17 +1455,17 @@ function applyMasterFilterPreset(presetKey) {
     mf.startBulan = 'Bulan 1 2026';
     mf.endBulan = 'Bulan 9 2026';
     mf.startDate = '2026-01-01';
-    mf.endDate = '2026-09-06';
+    mf.endDate = maxDate;
   } else if (presetKey === 'q3-2026') {
     mf.startBulan = 'Bulan 7 2026';
     mf.endBulan = 'Bulan 9 2026';
     mf.startDate = '2026-07-01';
-    mf.endDate = '2026-09-06';
+    mf.endDate = maxDate;
   } else if (presetKey === 'latest') {
     mf.startBulan = 'Bulan 9 2026';
     mf.endBulan = 'Bulan 9 2026';
     mf.startDate = '2026-09-01';
-    mf.endDate = '2026-09-06';
+    mf.endDate = maxDate;
   }
 
   const startSelect = document.getElementById('mfStartBulan');
@@ -1305,8 +1475,14 @@ function applyMasterFilterPreset(presetKey) {
 
   const startDateInput = document.getElementById('mfStartDate');
   const endDateInput = document.getElementById('mfEndDate');
-  if (startDateInput) startDateInput.value = mf.startDate;
-  if (endDateInput) endDateInput.value = mf.endDate;
+  if (startDateInput) {
+    startDateInput.max = maxDate;
+    startDateInput.value = mf.startDate;
+  }
+  if (endDateInput) {
+    endDateInput.max = maxDate;
+    endDateInput.value = mf.endDate;
+  }
 
   applyMasterFilter();
 }
@@ -1314,6 +1490,7 @@ function applyMasterFilterPreset(presetKey) {
 // Master Filter: Core Application Function
 function applyMasterFilter() {
   const mf = state.masterFilter;
+  const maxDate = getLatestTxDateISO(state.transactions);
   let activeMonths = [];
   let isAll = false;
 
@@ -1339,7 +1516,7 @@ function applyMasterFilter() {
   } else {
     // Tanggal Mode
     let start = mf.startDate || '2025-08-01';
-    let end = mf.endDate || '2026-09-06';
+    let end = mf.endDate || maxDate;
     if (start > end) {
       const temp = start; start = end; end = temp;
       mf.startDate = start;
@@ -1349,7 +1526,7 @@ function applyMasterFilter() {
       if (startDateInput) startDateInput.value = start;
       if (endDateInput) endDateInput.value = end;
     }
-    isAll = (start <= '2025-08-01' && end >= '2026-09-06');
+    isAll = (start <= '2025-08-01' && end >= maxDate);
 
     state.masterFilteredTransactions = (state.transactions || []).filter(t => {
       const iso = parseTxDateToISO(t.date_trf || t.date_req);
@@ -1401,19 +1578,38 @@ function applyMasterFilter() {
     kpiSisa.className = 'kpi-value ' + (sisaKredit >= 0 ? 'text-success' : 'text-danger');
   }
 
-  // Today's Cost: Adapt to latest date in filtered transactions
+  // Update Bank Scorecards from summary balances
+  if (state.summary && state.summary.balances) {
+    const b = state.summary.balances;
+    const kpiBca = document.getElementById('kpiBca');
+    const kpiMandiri = document.getElementById('kpiMandiri');
+    const kpiTotalBank = document.getElementById('kpiTotalBank');
+    if (kpiBca) kpiBca.textContent = b.bca || formatRp(b.bca_num);
+    if (kpiMandiri) kpiMandiri.textContent = b.mandiri || formatRp(b.mandiri_num);
+    if (kpiTotalBank) {
+      const totalBank = (b.bca_num || 0) + (b.mandiri_num || 0);
+      kpiTotalBank.textContent = formatRp(totalBank);
+    }
+  }
+
+  // Today's Cost: Adapt to latest date in filtered transactions, or fallback to latest in summary
   const todayDateBadge = document.getElementById('todayCostDate');
   const todayAmount = document.getElementById('todayCostAmount');
   const todayTxCount = document.getElementById('todayCostTxCount');
   if (state.masterFilteredTransactions && state.masterFilteredTransactions.length > 0) {
     const latestTx = state.masterFilteredTransactions[state.masterFilteredTransactions.length - 1];
-    const latestDate = latestTx.date_trf || latestTx.date_req || '06-Sep-26';
+    const latestDate = latestTx.date_trf || latestTx.date_req || '07-Sep-26';
     const sameDayTxs = state.masterFilteredTransactions.filter(t => (t.date_trf || t.date_req) === latestDate);
     const sameDaySum = sameDayTxs.reduce((a, b) => a + (b.price_num || 0), 0);
 
     if (todayDateBadge) todayDateBadge.textContent = latestDate;
     if (todayAmount) todayAmount.textContent = formatRp(sameDaySum);
     if (todayTxCount) todayTxCount.textContent = `${sameDayTxs.length} Transaksi`;
+  } else if (state.summary && state.summary.today_cost && state.summary.today_cost.date) {
+    const t = state.summary.today_cost;
+    if (todayDateBadge) todayDateBadge.textContent = t.date;
+    if (todayAmount) todayAmount.textContent = t.total_cost || formatRp(t.total_cost_num);
+    if (todayTxCount) todayTxCount.textContent = `${t.total_transaction || 0} Transaksi`;
   } else {
     if (todayDateBadge) todayDateBadge.textContent = '-';
     if (todayAmount) todayAmount.textContent = 'Rp 0';

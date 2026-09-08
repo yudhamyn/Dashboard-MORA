@@ -1,21 +1,21 @@
 {
   "today_cost": {
-    "date": "06-Sep-26",
-    "total_transaction": 16,
-    "total_cost": "Rp 16,380,500",
-    "total_cost_num": 16380500
+    "date": "07-Sep-26",
+    "total_transaction": 40,
+    "total_cost": "Rp 61,200,423",
+    "total_cost_num": 61200423
   },
   "balances": {
-    "total_kredit": "Rp 27,786,762,165",
-    "total_kredit_num": 27786762165,
-    "cash_out": "Rp 27,701,137,398",
-    "cash_out_num": 27701137398,
-    "sisa_kredit": "Rp 85,624,766",
-    "sisa_kredit_num": 85624766,
+    "total_kredit": "Rp 27,788,262,165",
+    "total_kredit_num": 27788262165,
+    "cash_out": "Rp 27,762,337,821",
+    "cash_out_num": 27762337821,
+    "sisa_kredit": "Rp 25,924,343",
+    "sisa_kredit_num": 25924343,
     "bca": "Rp 3,446,342",
     "bca_num": 3446342,
-    "mandiri": "Rp 82,178,424",
-    "mandiri_num": 82178424
+    "mandiri": "Rp 22,478,001",
+    "mandiri_num": 22478001
   },
   "cash_flow": [
     {
@@ -167,10 +167,10 @@
       "kredit_sumbagja_num": 0,
       "kredit_ebdi": "Rp -",
       "kredit_ebdi_num": 0,
-      "kredit_nabila": "Rp364,650,000",
-      "kredit_nabila_num": 364650000,
-      "cash_out": "Rp 300,247,640",
-      "cash_out_num": 300247640
+      "kredit_nabila": "Rp366,150,000",
+      "kredit_nabila_num": 366150000,
+      "cash_out": "Rp 361,448,063",
+      "cash_out_num": 361448063
     },
     {
       "bulan": "Grand Total",
@@ -178,10 +178,10 @@
       "kredit_sumbagja_num": 1238634497,
       "kredit_ebdi": "Rp 1,141,419,500",
       "kredit_ebdi_num": 1141419500,
-      "kredit_nabila": "Rp25,406,708,168",
-      "kredit_nabila_num": 25406708168,
-      "cash_out": "Rp 27,701,137,398",
-      "cash_out_num": 27701137398
+      "kredit_nabila": "Rp25,408,208,168",
+      "kredit_nabila_num": 25408208168,
+      "cash_out": "Rp 27,762,337,821",
+      "cash_out_num": 27762337821
     }
   ],
   "cost_detail": {
@@ -209,8 +209,8 @@
             "num": 183210000
           },
           "CENTRAL SUMATRA": {
-            "text": "Rp 508,194,772",
-            "num": 508194772
+            "text": "Rp 508,344,772",
+            "num": 508344772
           },
           "CENTRAL SUMATRA INTERNAL": {
             "text": "Rp 8,550,000",
@@ -233,8 +233,8 @@
             "num": 128685000
           },
           "Grand Total": {
-            "text": "Rp 1,003,443,348",
-            "num": 1003443348
+            "text": "Rp 1,003,593,348",
+            "num": 1003593348
           }
         }
       },
@@ -246,12 +246,12 @@
             "num": 0
           },
           "BALNUS": {
-            "text": "Rp 330,335,250",
-            "num": 330335250
+            "text": "Rp 331,630,250",
+            "num": 331630250
           },
           "CENTRAL SUMATRA": {
-            "text": "Rp 779,568,500",
-            "num": 779568500
+            "text": "Rp 781,533,500",
+            "num": 781533500
           },
           "CENTRAL SUMATRA INTERNAL": {
             "text": "Rp 8,600,000",
@@ -274,8 +274,8 @@
             "num": 105620090
           },
           "Grand Total": {
-            "text": "Rp 1,341,579,440",
-            "num": 1341579440
+            "text": "Rp 1,344,839,440",
+            "num": 1344839440
           }
         }
       },
@@ -283,16 +283,16 @@
         "category": "BOP",
         "values": {
           "ADMIN": {
-            "text": "Rp 104,666,381",
-            "num": 104666381
+            "text": "Rp 104,747,881",
+            "num": 104747881
           },
           "BALNUS": {
-            "text": "Rp 1,689,007,528",
-            "num": 1689007528
+            "text": "Rp 1,689,300,528",
+            "num": 1689300528
           },
           "CENTRAL SUMATRA": {
-            "text": "Rp 4,275,509,741",
-            "num": 4275509741
+            "text": "Rp 4,312,175,512",
+            "num": 4312175512
           },
           "CENTRAL SUMATRA INTERNAL": {
             "text": "Rp 13,578,000",
@@ -315,8 +315,8 @@
             "num": 475022957
           },
           "Grand Total": {
-            "text": "Rp 8,414,683,353",
-            "num": 8414683353
+            "text": "Rp 8,451,723,624",
+            "num": 8451723624
           }
         }
       },
@@ -578,8 +578,8 @@
             "num": 771100000
           },
           "CENTRAL SUMATRA": {
-            "text": "Rp 866,950,000",
-            "num": 866950000
+            "text": "Rp 871,450,000",
+            "num": 871450000
           },
           "CENTRAL SUMATRA INTERNAL": {
             "text": "",
@@ -602,8 +602,8 @@
             "num": 376800000
           },
           "Grand Total": {
-            "text": "Rp 2,318,350,000",
-            "num": 2318350000
+            "text": "Rp 2,322,850,000",
+            "num": 2322850000
           }
         }
       },
@@ -615,12 +615,12 @@
             "num": 0
           },
           "BALNUS": {
-            "text": "Rp 2,814,942,667",
-            "num": 2814942667
+            "text": "Rp 2,829,192,819",
+            "num": 2829192819
           },
           "CENTRAL SUMATRA": {
-            "text": "Rp 4,615,877,002",
-            "num": 4615877002
+            "text": "Rp 4,617,877,002",
+            "num": 4617877002
           },
           "CENTRAL SUMATRA INTERNAL": {
             "text": "",
@@ -643,8 +643,8 @@
             "num": 1173122493
           },
           "Grand Total": {
-            "text": "Rp 10,090,223,824",
-            "num": 10090223824
+            "text": "Rp 10,106,473,976",
+            "num": 10106473976
           }
         }
       },
@@ -692,16 +692,16 @@
     ],
     "grand_total": {
       "ADMIN": {
-        "text": "Rp 104,666,381",
-        "num": 104666381
+        "text": "Rp 104,747,881",
+        "num": 104747881
       },
       "BALNUS": {
-        "text": "Rp 7,773,017,178",
-        "num": 7773017178
+        "text": "Rp 7,788,855,330",
+        "num": 7788855330
       },
       "CENTRAL SUMATRA": {
-        "text": "Rp 12,875,009,431",
-        "num": 12875009431
+        "text": "Rp 12,920,290,202",
+        "num": 12920290202
       },
       "CENTRAL SUMATRA INTERNAL": {
         "text": "Rp 35,528,000",
@@ -724,8 +724,8 @@
         "num": 2355032207
       },
       "Grand Total": {
-        "text": "Rp 27,698,637,398",
-        "num": 27698637398
+        "text": "Rp 27,759,837,821",
+        "num": 27759837821
       }
     }
   },
@@ -763,49 +763,79 @@
   ],
   "price_by_bulan": [
     {
+      "bulan": "Bulan 8 2025",
+      "price": "Rp 1,035,759,497",
+      "price_num": 1035759497
+    },
+    {
+      "bulan": "Bulan 9 2025",
+      "price": "Rp -",
+      "price_num": 0
+    },
+    {
+      "bulan": "Bulan 10 2025",
+      "price": "Rp -",
+      "price_num": 0
+    },
+    {
+      "bulan": "Bulan 11 2025",
+      "price": "Rp -",
+      "price_num": 0
+    },
+    {
+      "bulan": "Bulan 12 2025",
+      "price": "Rp -",
+      "price_num": 0
+    },
+    {
       "bulan": "Bulan 1 2026",
-      "price": "Rp 2,483,804,792",
-      "price_num": 2483804792
+      "price": "Rp -",
+      "price_num": 0
     },
     {
       "bulan": "Bulan 2 2026",
-      "price": "Rp 2,777,972,136",
-      "price_num": 2777972136
+      "price": "Rp 192,870,000.00",
+      "price_num": 192870000
     },
     {
       "bulan": "Bulan 3 2026",
-      "price": "Rp 2,413,527,398",
-      "price_num": 2413527398
+      "price": "Rp -",
+      "price_num": 0
     },
     {
       "bulan": "Bulan 4 2026",
-      "price": "Rp 2,038,902,212",
-      "price_num": 2038902212
+      "price": "Rp -",
+      "price_num": 0
     },
     {
       "bulan": "Bulan 5 2026",
-      "price": "Rp 3,532,119,695",
-      "price_num": 3532119695
+      "price": "Rp 10,005,000.00",
+      "price_num": 10005000
     },
     {
       "bulan": "Bulan 6 2026",
-      "price": "Rp 1,782,972,943",
-      "price_num": 1782972943
+      "price": "Rp -",
+      "price_num": 0
     },
     {
       "bulan": "Bulan 7 2026",
-      "price": "Rp 1,714,506,561",
-      "price_num": 1714506561
+      "price": "Rp -",
+      "price_num": 0
     },
     {
       "bulan": "Bulan 8 2026",
-      "price": "Rp 1,393,675,962",
-      "price_num": 1393675962
+      "price": "Rp -",
+      "price_num": 0
+    },
+    {
+      "bulan": "Bulan 9 2026",
+      "price": "Rp -",
+      "price_num": 0
     },
     {
       "bulan": "Grand Total",
-      "price": "Rp 18,137,481,700",
-      "price_num": 18137481700
+      "price": "Rp 1,238,634,497",
+      "price_num": 1238634497
     }
   ],
   "price_by_category_region": {

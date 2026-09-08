@@ -2,12 +2,12 @@
 
 [[redirects]]
   from = "/api/sheets/summary"
-  to = "https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/gviz/tq?tqx=out:csv&gid=1112038042"
+  to = "https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/export?format=csv&gid=1112038042"
   status = 200
   force = true
 
 [[redirects]]
   from = "/api/sheets/transfer"
-  to = "https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/gviz/tq?tqx=out:csv&gid=747143276"
+  to = "https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/export?format=csv&gid=747143276"
   status = 200
   force = true
