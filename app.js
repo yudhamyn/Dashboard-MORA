@@ -1309,26 +1309,26 @@ function renderCharts() {
 function initMasterFilterControls() {
   const startSelect = document.getElementById('mfStartBulan');
   const endSelect = document.getElementById('mfEndBulan');
-  if (!startSelect || !endSelect) return;
+  if (startSelect && endSelect) {
+    startSelect.innerHTML = '';
+    endSelect.innerHTML = '';
 
-  startSelect.innerHTML = '';
-  endSelect.innerHTML = '';
+    CHRONO_MONTHS.forEach(b => {
+      const sName = MONTH_NAMES_MAP[b] ? ` (${MONTH_NAMES_MAP[b]})` : '';
+      const opt1 = document.createElement('option');
+      opt1.value = b;
+      opt1.textContent = b + sName;
+      startSelect.appendChild(opt1);
 
-  CHRONO_MONTHS.forEach(b => {
-    const sName = MONTH_NAMES_MAP[b] ? ` (${MONTH_NAMES_MAP[b]})` : '';
-    const opt1 = document.createElement('option');
-    opt1.value = b;
-    opt1.textContent = b + sName;
-    startSelect.appendChild(opt1);
+      const opt2 = document.createElement('option');
+      opt2.value = b;
+      opt2.textContent = b + sName;
+      endSelect.appendChild(opt2);
+    });
 
-    const opt2 = document.createElement('option');
-    opt2.value = b;
-    opt2.textContent = b + sName;
-    endSelect.appendChild(opt2);
-  });
-
-  startSelect.value = state.masterFilter.startBulan || CHRONO_MONTHS[0];
-  endSelect.value = state.masterFilter.endBulan || CHRONO_MONTHS[CHRONO_MONTHS.length - 1];
+    startSelect.value = state.masterFilter.startBulan || CHRONO_MONTHS[0];
+    endSelect.value = state.masterFilter.endBulan || CHRONO_MONTHS[CHRONO_MONTHS.length - 1];
+  }
 
   const maxDate = getLatestTxDateISO(state.transactions);
   const startDateInput = document.getElementById('mfStartDate');
@@ -1350,31 +1350,6 @@ function initMasterFilterControls() {
 
 // Master Filter: Event Listeners
 function initMasterFilterEventListeners() {
-  const modeBulanBtn = document.getElementById('mfModeBulanBtn');
-  const modeTanggalBtn = document.getElementById('mfModeTanggalBtn');
-  const bulanGroup = document.getElementById('mfBulanGroup');
-  const tanggalGroup = document.getElementById('mfTanggalGroup');
-
-  if (modeBulanBtn && modeTanggalBtn) {
-    modeBulanBtn.addEventListener('click', () => {
-      state.masterFilter.mode = 'bulan';
-      modeBulanBtn.classList.add('active');
-      modeTanggalBtn.classList.remove('active');
-      if (bulanGroup) bulanGroup.style.display = 'flex';
-      if (tanggalGroup) tanggalGroup.style.display = 'none';
-      applyMasterFilter();
-    });
-
-    modeTanggalBtn.addEventListener('click', () => {
-      state.masterFilter.mode = 'tanggal';
-      modeTanggalBtn.classList.add('active');
-      modeBulanBtn.classList.remove('active');
-      if (bulanGroup) bulanGroup.style.display = 'none';
-      if (tanggalGroup) tanggalGroup.style.display = 'flex';
-      applyMasterFilter();
-    });
-  }
-
   // Presets
   const presetBtns = document.querySelectorAll('.mf-preset-btn');
   presetBtns.forEach(btn => {
@@ -1384,7 +1359,7 @@ function initMasterFilterEventListeners() {
     });
   });
 
-  // Month Selects Change
+  // Month Selects Change (if present)
   const startSelect = document.getElementById('mfStartBulan');
   const endSelect = document.getElementById('mfEndBulan');
   if (startSelect && endSelect) {
@@ -1398,7 +1373,7 @@ function initMasterFilterEventListeners() {
     endSelect.addEventListener('change', onMonthChange);
   }
 
-  // Date Inputs Change
+  // Date Inputs Change (if present)
   const startDateInput = document.getElementById('mfStartDate');
   const endDateInput = document.getElementById('mfEndDate');
   if (startDateInput && endDateInput) {
@@ -1416,13 +1391,6 @@ function initMasterFilterEventListeners() {
   const btnReset = document.getElementById('btnResetMasterFilter');
   if (btnReset) {
     btnReset.addEventListener('click', () => {
-      // Reset mode to Bulan
-      state.masterFilter.mode = 'bulan';
-      if (modeBulanBtn) modeBulanBtn.classList.add('active');
-      if (modeTanggalBtn) modeTanggalBtn.classList.remove('active');
-      if (bulanGroup) bulanGroup.style.display = 'flex';
-      if (tanggalGroup) tanggalGroup.style.display = 'none';
-
       applyMasterFilterPreset('all');
     });
   }
@@ -1456,6 +1424,16 @@ function applyMasterFilterPreset(presetKey) {
     mf.endBulan = 'Bulan 9 2026';
     mf.startDate = '2026-01-01';
     mf.endDate = maxDate;
+  } else if (presetKey === 'q1-2026') {
+    mf.startBulan = 'Bulan 1 2026';
+    mf.endBulan = 'Bulan 3 2026';
+    mf.startDate = '2026-01-01';
+    mf.endDate = '2026-03-31';
+  } else if (presetKey === 'q2-2026') {
+    mf.startBulan = 'Bulan 4 2026';
+    mf.endBulan = 'Bulan 6 2026';
+    mf.startDate = '2026-04-01';
+    mf.endDate = '2026-06-30';
   } else if (presetKey === 'q3-2026') {
     mf.startBulan = 'Bulan 7 2026';
     mf.endBulan = 'Bulan 9 2026';

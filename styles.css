@@ -389,10 +389,8 @@ body {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-left: 6px;
-  padding-left: 12px;
-  border-left: 1px solid var(--border-color);
+  gap: 8px;
+  width: 100%;
 }
 
 .mf-presets-label {

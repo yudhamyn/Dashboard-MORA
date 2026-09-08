@@ -62,72 +62,31 @@
             </svg>
           </div>
           <div>
-            <span class="mf-heading">Master Filter Rentang Data</span>
-            <span class="mf-subheading">Saring seluruh analitik & transaksi berdasarkan periode waktu</span>
+            <span class="mf-heading">Master Filter Periode</span>
+            <span class="mf-subheading">Pilih periode waktu analitik & data transaksi</span>
           </div>
         </div>
 
-        <!-- Mode Toggle: Bulan vs Tanggal -->
-        <div class="mf-mode-switch">
-          <button type="button" class="mf-mode-btn active" id="mfModeBulanBtn" data-mode="bulan">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span>Rentang Bulan</span>
-          </button>
-          <button type="button" class="mf-mode-btn" id="mfModeTanggalBtn" data-mode="tanggal">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
-            <span>Rentang Tanggal</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Controls Row -->
-      <div class="master-filter-controls">
-        <!-- Month Range Inputs -->
-        <div class="mf-inputs-group" id="mfBulanGroup">
-          <div class="mf-field">
-            <label for="mfStartBulan">Dari Bulan:</label>
-            <select id="mfStartBulan" class="mf-select"></select>
-          </div>
-          <div class="mf-arrow">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </div>
-          <div class="mf-field">
-            <label for="mfEndBulan">Sampai Bulan:</label>
-            <select id="mfEndBulan" class="mf-select"></select>
-          </div>
-        </div>
-
-        <!-- Date Range Inputs (Hidden by default in Bulan mode) -->
-        <div class="mf-inputs-group" id="mfTanggalGroup" style="display: none;">
-          <div class="mf-field">
-            <label for="mfStartDate">Dari Tanggal:</label>
-            <input type="date" id="mfStartDate" class="mf-input-date" min="2025-08-01" value="2025-08-01">
-          </div>
-          <div class="mf-arrow">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </div>
-          <div class="mf-field">
-            <label for="mfEndDate">Sampai Tanggal:</label>
-            <input type="date" id="mfEndDate" class="mf-input-date" min="2025-08-01" value="2026-09-07">
-          </div>
-        </div>
-
-        <!-- Quick Presets -->
-        <div class="mf-presets">
-          <span class="mf-presets-label">Pintasan:</span>
-          <button type="button" class="mf-preset-btn active" data-preset="all">Semua Data</button>
-          <button type="button" class="mf-preset-btn" data-preset="2025">Tahun 2025</button>
-          <button type="button" class="mf-preset-btn" data-preset="2026">Tahun 2026</button>
-          <button type="button" class="mf-preset-btn" data-preset="q3-2026">Q3 2026</button>
-          <button type="button" class="mf-preset-btn" data-preset="latest">Bulan 9 2026</button>
-        </div>
-
-        <!-- Actions -->
+        <!-- Quick Actions -->
         <div class="mf-actions">
           <button type="button" class="btn btn-secondary" id="btnResetMasterFilter" title="Reset ke seluruh data">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             <span>Reset Filter</span>
           </button>
+        </div>
+      </div>
+
+      <!-- Controls Row: Presets Only -->
+      <div class="master-filter-controls">
+        <div class="mf-presets">
+          <span class="mf-presets-label">Pintasan:</span>
+          <button type="button" class="mf-preset-btn active" data-preset="all">Semua Data</button>
+          <button type="button" class="mf-preset-btn" data-preset="2025">Tahun 2025</button>
+          <button type="button" class="mf-preset-btn" data-preset="2026">Tahun 2026</button>
+          <button type="button" class="mf-preset-btn" data-preset="q1-2026">Q1 2026</button>
+          <button type="button" class="mf-preset-btn" data-preset="q2-2026">Q2 2026</button>
+          <button type="button" class="mf-preset-btn" data-preset="q3-2026">Q3 2026</button>
+          <button type="button" class="mf-preset-btn" data-preset="latest">Bulan 9 2026 (Terbaru)</button>
         </div>
       </div>
 
@@ -141,15 +100,15 @@
         <div class="mf-status-stats">
           <span class="mf-stat-pill">
             <span class="mf-stat-title">Transaksi:</span>
-            <strong id="mfStatTxCount">23.624</strong>
+            <strong id="mfStatTxCount">23.666</strong>
           </span>
           <span class="mf-stat-pill">
             <span class="mf-stat-title">Cash Out:</span>
-            <strong id="mfStatCashOut" class="text-danger">Rp 27.701.137.398</strong>
+            <strong id="mfStatCashOut" class="text-danger">Rp 27.762.337.821</strong>
           </span>
           <span class="mf-stat-pill">
             <span class="mf-stat-title">Total Kredit:</span>
-            <strong id="mfStatKredit" class="text-primary">Rp 27.786.762.165</strong>
+            <strong id="mfStatKredit" class="text-primary">Rp 27.788.262.165</strong>
           </span>
         </div>
       </div>
@@ -196,7 +155,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
             </span>
           </div>
-          <div class="kpi-value" id="kpiTotalKredit">Rp 27,786,762,165</div>
+          <div class="kpi-value" id="kpiTotalKredit">Rp 27,788,262,165</div>
           <div class="kpi-footer">
             <span class="badge badge-success">Dana Masuk</span>
             <span class="kpi-subtext">Sumbagja + Ebdi + Nabila</span>
@@ -211,7 +170,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
             </span>
           </div>
-          <div class="kpi-value" id="kpiCashOut">Rp 27,701,137,398</div>
+          <div class="kpi-value" id="kpiCashOut">Rp 27,762,337,821</div>
           <div class="kpi-footer">
             <span class="badge badge-danger">Realisasi Pengeluaran</span>
             <span class="kpi-subtext">Operasional Proyek</span>
@@ -226,7 +185,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
             </span>
           </div>
-          <div class="kpi-value text-success" id="kpiSisaKredit">Rp 85,624,766</div>
+          <div class="kpi-value text-success" id="kpiSisaKredit">Rp 25,924,343</div>
           <div class="kpi-footer">
             <span class="badge badge-info">Surplus Saldo</span>
             <span class="kpi-subtext">Total Kredit - Cash Out</span>
@@ -254,7 +213,7 @@
                 <span class="bank-dot mandiri-dot"></span>
                 <strong>MANDIRI</strong>
               </div>
-              <div class="bank-val" id="kpiMandiri">Rp 82,178,424</div>
+              <div class="bank-val" id="kpiMandiri">Rp 22,478,001</div>
             </div>
           </div>
           <div class="kpi-footer">
@@ -275,7 +234,7 @@
           </div>
           <div class="kpi-value text-purple" id="todayCostAmount">Rp 61,200,423</div>
           <div class="kpi-footer">
-            <span class="badge badge-purple" id="todayCostTxCount">40 Transaksi</span>
+            <span class="badge badge-purple" id="todayCostTxCount">42 Transaksi</span>
             <span class="kpi-subtext">Pencatatan Hari Terakhir</span>
           </div>
         </div>
