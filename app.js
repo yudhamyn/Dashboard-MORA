@@ -1084,6 +1084,24 @@ function populatePriceCatRegPivot(pcr) {
 }
 
 // 6. Top Categories List with Progress Bars
+function populateTopCategories(costDetailOrList) {
+  if (!costDetailOrList) return;
+  if (Array.isArray(costDetailOrList)) {
+    populateTopCategoriesFromTxs(costDetailOrList);
+    return;
+  }
+  if (costDetailOrList.rows && Array.isArray(costDetailOrList.rows)) {
+    const sorted = costDetailOrList.rows
+      .map(r => {
+        const total = (r.values && r.values['Grand Total']) ? (r.values['Grand Total'].num || 0) : 0;
+        return [r.category, total];
+      })
+      .filter(item => item[0] && item[0].toLowerCase() !== 'grand total')
+      .sort((a, b) => b[1] - a[1]);
+    populateTopCategoriesFromTxs(sorted);
+  }
+}
+
 function populateTopCategoriesFromTxs(sortedCats) {
   const container = document.getElementById('topCategoriesList');
   if (!container) return;
