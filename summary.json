@@ -1,21 +1,21 @@
 {
   "today_cost": {
-    "date": "07-Sep-26",
-    "total_transaction": 40,
-    "total_cost": "Rp 61,200,423",
-    "total_cost_num": 61200423
+    "date": "09-Sep-26",
+    "total_transaction": 31,
+    "total_cost": "Rp 34,762,068",
+    "total_cost_num": 34762068
   },
   "balances": {
-    "total_kredit": "Rp 27,788,262,165",
-    "total_kredit_num": 27788262165,
-    "cash_out": "Rp 27,762,337,821",
-    "cash_out_num": 27762337821,
-    "sisa_kredit": "Rp 25,924,343",
-    "sisa_kredit_num": 25924343,
+    "total_kredit": "Rp 27,888,762,165",
+    "total_kredit_num": 27888762165,
+    "cash_out": "Rp 27,879,022,619",
+    "cash_out_num": 27879022619,
+    "sisa_kredit": "Rp 9,739,545",
+    "sisa_kredit_num": 9739545,
     "bca": "Rp 3,446,342",
     "bca_num": 3446342,
-    "mandiri": "Rp 22,478,001",
-    "mandiri_num": 22478001
+    "mandiri": "Rp 6,293,203",
+    "mandiri_num": 6293203
   },
   "cash_flow": [
     {
@@ -167,10 +167,10 @@
       "kredit_sumbagja_num": 0,
       "kredit_ebdi": "Rp -",
       "kredit_ebdi_num": 0,
-      "kredit_nabila": "Rp366,150,000",
-      "kredit_nabila_num": 366150000,
-      "cash_out": "Rp 361,448,063",
-      "cash_out_num": 361448063
+      "kredit_nabila": "Rp466,650,000",
+      "kredit_nabila_num": 466650000,
+      "cash_out": "Rp 478,132,861",
+      "cash_out_num": 478132861
     },
     {
       "bulan": "Grand Total",
@@ -178,10 +178,10 @@
       "kredit_sumbagja_num": 1238634497,
       "kredit_ebdi": "Rp 1,141,419,500",
       "kredit_ebdi_num": 1141419500,
-      "kredit_nabila": "Rp25,408,208,168",
-      "kredit_nabila_num": 25408208168,
-      "cash_out": "Rp 27,762,337,821",
-      "cash_out_num": 27762337821
+      "kredit_nabila": "Rp25,508,708,168",
+      "kredit_nabila_num": 25508708168,
+      "cash_out": "Rp 27,879,022,619",
+      "cash_out_num": 27879022619
     }
   ],
   "cost_detail": {
@@ -246,8 +246,8 @@
             "num": 0
           },
           "BALNUS": {
-            "text": "Rp 331,630,250",
-            "num": 331630250
+            "text": "Rp 332,368,250",
+            "num": 332368250
           },
           "CENTRAL SUMATRA": {
             "text": "Rp 781,533,500",
@@ -274,8 +274,8 @@
             "num": 105620090
           },
           "Grand Total": {
-            "text": "Rp 1,344,839,440",
-            "num": 1344839440
+            "text": "Rp 1,345,577,440",
+            "num": 1345577440
           }
         }
       },
@@ -283,16 +283,16 @@
         "category": "BOP",
         "values": {
           "ADMIN": {
-            "text": "Rp 104,747,881",
-            "num": 104747881
+            "text": "Rp 104,857,881",
+            "num": 104857881
           },
           "BALNUS": {
-            "text": "Rp 1,689,300,528",
-            "num": 1689300528
+            "text": "Rp 1,707,346,328",
+            "num": 1707346328
           },
           "CENTRAL SUMATRA": {
-            "text": "Rp 4,312,175,512",
-            "num": 4312175512
+            "text": "Rp 4,352,149,742",
+            "num": 4352149742
           },
           "CENTRAL SUMATRA INTERNAL": {
             "text": "Rp 13,578,000",
@@ -315,8 +315,8 @@
             "num": 475022957
           },
           "Grand Total": {
-            "text": "Rp 8,451,723,624",
-            "num": 8451723624
+            "text": "Rp 8,509,853,654",
+            "num": 8509853654
           }
         }
       },
@@ -369,8 +369,8 @@
             "num": 0
           },
           "BALNUS": {
-            "text": "Rp 1,324,100,000",
-            "num": 1324100000
+            "text": "Rp 1,374,100,000",
+            "num": 1374100000
           },
           "CENTRAL SUMATRA": {
             "text": "Rp 250,000",
@@ -397,8 +397,8 @@
             "num": 0
           },
           "Grand Total": {
-            "text": "Rp 1,573,181,000",
-            "num": 1573181000
+            "text": "Rp 1,623,181,000",
+            "num": 1623181000
           }
         }
       },
@@ -615,12 +615,12 @@
             "num": 0
           },
           "BALNUS": {
-            "text": "Rp 2,829,192,819",
-            "num": 2829192819
+            "text": "Rp 2,832,009,587",
+            "num": 2832009587
           },
           "CENTRAL SUMATRA": {
-            "text": "Rp 4,617,877,002",
-            "num": 4617877002
+            "text": "Rp 4,622,877,002",
+            "num": 4622877002
           },
           "CENTRAL SUMATRA INTERNAL": {
             "text": "",
@@ -643,8 +643,8 @@
             "num": 1173122493
           },
           "Grand Total": {
-            "text": "Rp 10,106,473,976",
-            "num": 10106473976
+            "text": "Rp 10,114,290,744",
+            "num": 10114290744
           }
         }
       },
@@ -692,16 +692,16 @@
     ],
     "grand_total": {
       "ADMIN": {
-        "text": "Rp 104,747,881",
-        "num": 104747881
+        "text": "Rp 104,857,881",
+        "num": 104857881
       },
       "BALNUS": {
-        "text": "Rp 7,788,855,330",
-        "num": 7788855330
+        "text": "Rp 7,860,455,898",
+        "num": 7860455898
       },
       "CENTRAL SUMATRA": {
-        "text": "Rp 12,920,290,202",
-        "num": 12920290202
+        "text": "Rp 12,965,264,432",
+        "num": 12965264432
       },
       "CENTRAL SUMATRA INTERNAL": {
         "text": "Rp 35,528,000",
@@ -724,8 +724,8 @@
         "num": 2355032207
       },
       "Grand Total": {
-        "text": "Rp 27,759,837,821",
-        "num": 27759837821
+        "text": "Rp 27,876,522,619",
+        "num": 27876522619
       }
     }
   },

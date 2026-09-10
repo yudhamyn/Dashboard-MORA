@@ -29,10 +29,19 @@
     </div>
 
     <div class="header-right">
-      <div class="sync-badge" id="syncStatusBadge" title="Waktu sinkronisasi dataset terakhir">
+      <div class="sync-badge not-synced" id="syncStatusBadge" title="Klik untuk menyinkronkan data terbaru">
         <span class="pulse-dot"></span>
-        <span id="syncStatusText">Terakhir Diperbarui: 07 Sep 2026, 17:14 WIB</span>
+        <span id="syncStatusText">Belum Disinkronkan (Silakan Klik "Refresh Data")</span>
       </div>
+      <script>
+        try {
+          const _savedSync = localStorage.getItem('ebdi_last_refresh');
+          if (_savedSync) {
+            document.getElementById('syncStatusBadge').classList.remove('not-synced');
+            document.getElementById('syncStatusText').textContent = 'Terakhir Diperbarui: ' + _savedSync;
+          }
+        } catch (e) {}
+      </script>
       <button class="btn btn-secondary" id="btnSyncData" title="Sinkronisasi Ulang Data Langsung dari Google Sheets">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
@@ -100,15 +109,15 @@
         <div class="mf-status-stats">
           <span class="mf-stat-pill">
             <span class="mf-stat-title">Transaksi:</span>
-            <strong id="mfStatTxCount">23.666</strong>
+            <strong id="mfStatTxCount">23.723</strong>
           </span>
           <span class="mf-stat-pill">
             <span class="mf-stat-title">Cash Out:</span>
-            <strong id="mfStatCashOut" class="text-danger">Rp 27.762.337.821</strong>
+            <strong id="mfStatCashOut" class="text-danger">Rp 27.879.022.619</strong>
           </span>
           <span class="mf-stat-pill">
             <span class="mf-stat-title">Total Kredit:</span>
-            <strong id="mfStatKredit" class="text-primary">Rp 27.788.262.165</strong>
+            <strong id="mfStatKredit" class="text-primary">Rp 27.888.762.165</strong>
           </span>
         </div>
       </div>
@@ -136,7 +145,7 @@
       </button>
       <button class="tab-btn" data-tab="tab-transactions" role="tab" id="tabTransactionsBtn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        <span>Detail Transaksi (23.6K+)</span>
+        <span>Detail Transaksi (23.7K+)</span>
       </button>
     </div>
   </nav>
@@ -155,7 +164,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
             </span>
           </div>
-          <div class="kpi-value" id="kpiTotalKredit">Rp 27,788,262,165</div>
+          <div class="kpi-value" id="kpiTotalKredit">Rp 27,888,762,165</div>
           <div class="kpi-footer">
             <span class="badge badge-success">Dana Masuk</span>
             <span class="kpi-subtext">Sumbagja + Ebdi + Nabila</span>
@@ -170,7 +179,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
             </span>
           </div>
-          <div class="kpi-value" id="kpiCashOut">Rp 27,762,337,821</div>
+          <div class="kpi-value" id="kpiCashOut">Rp 27,879,022,619</div>
           <div class="kpi-footer">
             <span class="badge badge-danger">Realisasi Pengeluaran</span>
             <span class="kpi-subtext">Operasional Proyek</span>
@@ -185,7 +194,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
             </span>
           </div>
-          <div class="kpi-value text-success" id="kpiSisaKredit">Rp 25,924,343</div>
+          <div class="kpi-value text-success" id="kpiSisaKredit">Rp 9,739,545</div>
           <div class="kpi-footer">
             <span class="badge badge-info">Surplus Saldo</span>
             <span class="kpi-subtext">Total Kredit - Cash Out</span>
@@ -213,11 +222,11 @@
                 <span class="bank-dot mandiri-dot"></span>
                 <strong>MANDIRI</strong>
               </div>
-              <div class="bank-val" id="kpiMandiri">Rp 22,478,001</div>
+              <div class="bank-val" id="kpiMandiri">Rp 6,293,203</div>
             </div>
           </div>
           <div class="kpi-footer">
-            <span class="kpi-subtext">Total Bank: <strong id="kpiTotalBank">Rp 25,924,343</strong></span>
+            <span class="kpi-subtext">Total Bank: <strong id="kpiTotalBank">Rp 9,739,545</strong></span>
           </div>
         </div>
 
@@ -226,15 +235,15 @@
           <div class="kpi-header">
             <div class="today-title-group">
               <span class="kpi-label">Today's Cost</span>
-              <span class="today-date-badge" id="todayCostDate">07-Sep-26</span>
+              <span class="today-date-badge" id="todayCostDate">09-Sep-26</span>
             </div>
             <span class="kpi-icon-badge bg-purple">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </span>
           </div>
-          <div class="kpi-value text-purple" id="todayCostAmount">Rp 61,200,423</div>
+          <div class="kpi-value text-purple" id="todayCostAmount">Rp 34,762,068</div>
           <div class="kpi-footer">
-            <span class="badge badge-purple" id="todayCostTxCount">42 Transaksi</span>
+            <span class="badge badge-purple" id="todayCostTxCount">31 Transaksi</span>
             <span class="kpi-subtext">Pencatatan Hari Terakhir</span>
           </div>
         </div>

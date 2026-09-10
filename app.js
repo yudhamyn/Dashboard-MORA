@@ -55,7 +55,7 @@ function formatISODateToDisplay(isoStr) {
 
 function getLatestTxDateISO(txs) {
   const list = txs || state.transactions || [];
-  if (!list.length) return '2026-09-07';
+  if (!list.length) return '2026-09-09';
   let latest = '';
   // Check from the end of the array since transactions are predominantly chronological
   const checkCount = Math.min(list.length, 300);
@@ -63,7 +63,7 @@ function getLatestTxDateISO(txs) {
     const iso = parseTxDateToISO(list[i].date_trf || list[i].date_req);
     if (iso && iso > latest) latest = iso;
   }
-  return latest || '2026-09-07';
+  return latest || '2026-09-09';
 }
 
 // Application State
@@ -81,7 +81,7 @@ const state = {
     startBulan: 'Bulan 8 2025',
     endBulan: 'Bulan 9 2026',
     startDate: '2025-08-01',
-    endDate: '2026-09-07',
+    endDate: '2026-09-09',
     preset: 'all'
   },
   filters: {
@@ -235,6 +235,12 @@ function initEventListeners() {
   document.getElementById('btnSyncData').addEventListener('click', () => {
     syncDataDirectFromGoogleSheets();
   });
+  const syncBadge = document.getElementById('syncStatusBadge');
+  if (syncBadge) {
+    syncBadge.addEventListener('click', () => {
+      syncDataDirectFromGoogleSheets();
+    });
+  }
 
   // Modal Close
   document.getElementById('btnModalClose').addEventListener('click', closeModal);
@@ -253,21 +259,38 @@ function debounceApplyFilters() {
   }, 250);
 }
 
-// Load Dashboard Data (Prefers bundled data.js for instant offline loading)
-function loadDashboardData() {
+// Sync Status Badge UI Updater
+function updateSyncBadgeUI(refreshTime) {
   const badge = document.getElementById('syncStatusBadge');
   const badgeText = document.getElementById('syncStatusText');
+  if (!badge || !badgeText) return;
 
-  const savedRefreshTime = localStorage.getItem('ebdi_last_refresh') || '08 Sep 2026, 14:45 WIB';
+  const time = (refreshTime !== undefined) ? refreshTime : localStorage.getItem('ebdi_last_refresh');
+  if (time) {
+    badge.classList.remove('not-synced');
+    badgeText.textContent = 'Terakhir Diperbarui: ' + time;
+    badge.title = 'Waktu sinkronisasi dataset terakhir: ' + time + ' (Klik untuk refresh ulang)';
+  } else {
+    badge.classList.add('not-synced');
+    badgeText.textContent = 'Belum Disinkronkan (Silakan Klik "Refresh Data")';
+    badge.title = 'Data belum disinkronkan langsung. Silakan klik "Refresh Data" untuk mengambil data terbaru.';
+  }
+}
+
+// Load Dashboard Data (Prefers bundled data.js for instant offline loading)
+function loadDashboardData() {
+  updateSyncBadgeUI();
 
   // Check if localStorage has newer cached data from a live sync
   try {
     const cachedSummary = localStorage.getItem('ebdi_cached_summary');
     const cachedTxs = localStorage.getItem('ebdi_cached_txs');
+    const bundledCount = (window.EBDI_TRANSACTIONS && window.EBDI_TRANSACTIONS.length) || 0;
     if (cachedSummary && cachedTxs) {
       const parsedSum = JSON.parse(cachedSummary);
       const parsedTxs = JSON.parse(cachedTxs);
-      if (parsedSum && parsedTxs && parsedTxs.length >= 23600) {
+      // Only use localStorage if it has at least as many transactions as the bundled data (23.723+)
+      if (parsedSum && parsedTxs && parsedTxs.length >= bundledCount && parsedTxs.length >= 23700) {
         state.summary = parsedSum;
         state.transactions = parsedTxs;
         state.masterFilteredTransactions = parsedTxs;
@@ -275,7 +298,7 @@ function loadDashboardData() {
         populateSummaryUI(state.summary);
         initMasterFilterControls();
         applyMasterFilter();
-        badgeText.textContent = 'Terakhir Diperbarui: ' + savedRefreshTime;
+        updateSyncBadgeUI();
         return;
       }
     }
@@ -291,17 +314,22 @@ function loadDashboardData() {
       state.transactions = window.EBDI_TRANSACTIONS;
       state.masterFilteredTransactions = window.EBDI_TRANSACTIONS;
       populateFilterDropdowns(state.transactions);
+      try {
+        localStorage.setItem('ebdi_cached_summary', JSON.stringify(state.summary));
+        localStorage.setItem('ebdi_cached_txs', JSON.stringify(state.transactions));
+      } catch (e) {}
     }
 
     populateSummaryUI(state.summary);
     initMasterFilterControls();
     applyMasterFilter();
-    badgeText.textContent = 'Terakhir Diperbarui: ' + savedRefreshTime;
+    updateSyncBadgeUI();
     return;
   }
 
   // Fallback: If hosted on a server, try fetch
-  badgeText.textContent = 'Memuat data...';
+  const badgeText = document.getElementById('syncStatusText');
+  if (badgeText) badgeText.textContent = 'Memuat data...';
   fetch('summary.json')
     .then(res => res.json())
     .then(data => {
@@ -309,11 +337,11 @@ function loadDashboardData() {
       populateSummaryUI(state.summary);
       initMasterFilterControls();
       applyMasterFilter();
-      badgeText.textContent = 'Terakhir Diperbarui: ' + savedRefreshTime;
+      updateSyncBadgeUI();
     })
     .catch(err => {
       console.warn('Local JSON load fallback error:', err);
-      badgeText.textContent = 'Data Standby';
+      updateSyncBadgeUI();
     });
 }
 
@@ -708,9 +736,12 @@ function showToastNotification(options = {}) {
 async function syncDataDirectFromGoogleSheets() {
   const badge = document.getElementById('syncStatusBadge');
   const badgeText = document.getElementById('syncStatusText');
-  badgeText.textContent = 'Menghubungi Google Sheets...';
-  badge.style.borderColor = 'var(--warning)';
-  badge.style.color = 'var(--warning)';
+  if (badge) {
+    badge.classList.remove('not-synced');
+    badge.style.borderColor = 'var(--warning)';
+    badge.style.color = 'var(--warning)';
+  }
+  if (badgeText) badgeText.textContent = 'Menghubungi Google Sheets...';
 
   const ts = Date.now();
   const summaryUrls = [
@@ -763,7 +794,7 @@ async function syncDataDirectFromGoogleSheets() {
       const endDateInput = document.getElementById('mfEndDate');
       if (endDateInput) {
         endDateInput.max = latestISO;
-        if (state.masterFilter.endDate <= '2026-09-06' || state.masterFilter.preset === 'all' || state.masterFilter.preset === 'latest') {
+        if (!state.masterFilter.endDate || state.masterFilter.endDate < latestISO || state.masterFilter.preset === 'all' || state.masterFilter.preset === 'latest' || state.masterFilter.preset === '2026' || state.masterFilter.preset === 'q3-2026') {
           state.masterFilter.endDate = latestISO;
           endDateInput.value = latestISO;
         }
@@ -786,9 +817,12 @@ async function syncDataDirectFromGoogleSheets() {
       console.warn('Storage cache notice:', e);
     }
 
-    badgeText.textContent = 'Terakhir Diperbarui: ' + timeStr;
-    badge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-    badge.style.color = '#10b981';
+    if (badge) {
+      badge.style.borderColor = '';
+      badge.style.color = '';
+      badge.style.background = '';
+    }
+    updateSyncBadgeUI(timeStr);
 
     // Show sleek glassmorphic Toast notification
     showToastNotification({
@@ -813,10 +847,13 @@ async function syncDataDirectFromGoogleSheets() {
     });
   } catch (err) {
     console.error('Google Sheets sync notice:', err);
-    const savedTime = localStorage.getItem('ebdi_last_refresh') || '08 Sep 2026, 14:45 WIB';
-    badgeText.textContent = 'Terakhir Diperbarui: ' + savedTime;
-    badge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-    badge.style.color = '#10b981';
+    if (badge) {
+      badge.style.borderColor = '';
+      badge.style.color = '';
+      badge.style.background = '';
+    }
+    updateSyncBadgeUI();
+    const savedTime = localStorage.getItem('ebdi_last_refresh') || 'Data Bundled Lokal';
 
     const isFileProtocol = !window.location.protocol.startsWith('http');
     showToastNotification({
@@ -1341,7 +1378,7 @@ function initMasterFilterControls() {
   if (endDateInput) {
     endDateInput.min = '2025-08-01';
     endDateInput.max = maxDate;
-    if (!state.masterFilter.endDate || state.masterFilter.endDate <= '2026-09-06') {
+    if (!state.masterFilter.endDate || state.masterFilter.endDate < maxDate) {
       state.masterFilter.endDate = maxDate;
     }
     endDateInput.value = state.masterFilter.endDate;
@@ -1576,7 +1613,7 @@ function applyMasterFilter() {
   const todayTxCount = document.getElementById('todayCostTxCount');
   if (state.masterFilteredTransactions && state.masterFilteredTransactions.length > 0) {
     const latestTx = state.masterFilteredTransactions[state.masterFilteredTransactions.length - 1];
-    const latestDate = latestTx.date_trf || latestTx.date_req || '07-Sep-26';
+    const latestDate = latestTx.date_trf || latestTx.date_req || '09-Sep-26';
     const sameDayTxs = state.masterFilteredTransactions.filter(t => (t.date_trf || t.date_req) === latestDate);
     const sameDaySum = sameDayTxs.reduce((a, b) => a + (b.price_num || 0), 0);
 

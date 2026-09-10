@@ -157,6 +157,19 @@ body {
   font-size: 0.78rem;
   font-weight: 600;
   border-radius: var(--radius-full);
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.sync-badge:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.sync-badge.not-synced {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #f59e0b;
 }
 
 .pulse-dot {
@@ -167,10 +180,21 @@ body {
   animation: pulse-glow 2s infinite;
 }
 
+.sync-badge.not-synced .pulse-dot {
+  background-color: #f59e0b;
+  animation: pulse-glow-warning 2s infinite;
+}
+
 @keyframes pulse-glow {
   0% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
   70% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
   100% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+@keyframes pulse-glow-warning {
+  0% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+  70% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+  100% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
 }
 
 .theme-toggle {
