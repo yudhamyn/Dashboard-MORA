@@ -11,3 +11,15 @@
   to = "https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/export?format=csv&gid=747143276"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/api/sheets/sarah-summary"
+  to = "https://docs.google.com/spreadsheets/d/1mkP9QSlCsPhl-BQ8M8V8DBzPqRoXLkww0HuFUI2n4cc/export?format=csv&gid=50835563"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/sheets/sarah-transfer"
+  to = "https://docs.google.com/spreadsheets/d/1mkP9QSlCsPhl-BQ8M8V8DBzPqRoXLkww0HuFUI2n4cc/export?format=csv&gid=857996792"
+  status = 200
+  force = true

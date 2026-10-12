@@ -28,6 +28,33 @@
       </div>
     </div>
 
+    <!-- Admin Switcher (Nabila / Sarah / Gabungan) -->
+    <div class="admin-switcher-container" id="adminSwitcher">
+      <div class="admin-pill-group" role="tablist" aria-label="Pilih Versi Admin Dashboard">
+        <button type="button" class="admin-pill-btn active" data-admin="nabila" id="btnAdminNabila" title="Lihat Dashboard Khusus Admin Nabila">
+          <span class="admin-avatar">👩‍💼</span>
+          <span class="admin-label-wrap">
+            <span class="admin-name">Nabila</span>
+            <span class="admin-count" id="badgeCountNabila">24.7K</span>
+          </span>
+        </button>
+        <button type="button" class="admin-pill-btn" data-admin="sarah" id="btnAdminSarah" title="Lihat Dashboard Khusus Admin Sarah">
+          <span class="admin-avatar">👩‍💼</span>
+          <span class="admin-label-wrap">
+            <span class="admin-name">Sarah</span>
+            <span class="admin-count" id="badgeCountSarah">59.9K</span>
+          </span>
+        </button>
+        <button type="button" class="admin-pill-btn" data-admin="all" id="btnAdminCombined" title="Lihat Dashboard Gabungan (Nabila + Sarah)">
+          <span class="admin-avatar">👥</span>
+          <span class="admin-label-wrap">
+            <span class="admin-name">Gabungan</span>
+            <span class="admin-count" id="badgeCountCombined">84.6K</span>
+          </span>
+        </button>
+      </div>
+    </div>
+
     <div class="header-right">
       <div class="sync-badge not-synced" id="syncStatusBadge" title="Klik untuk menyinkronkan data terbaru">
         <span class="pulse-dot"></span>
@@ -92,7 +119,7 @@
         </span>
         <span class="sync-feat-pill">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-          24.000+ Transaksi
+          84.000+ Transaksi (Nabila & Sarah)
         </span>
       </div>
     </div>
@@ -125,16 +152,14 @@
 
       <!-- Controls Row: Presets Only -->
       <div class="master-filter-controls">
-        <div class="mf-presets">
+        <div class="mf-presets" id="mfPresetsContainer">
           <span class="mf-presets-label">Pintasan:</span>
           <button type="button" class="mf-preset-btn active" data-preset="all">Semua Data</button>
-          <button type="button" class="mf-preset-btn" data-preset="2025">Tahun 2025</button>
-          <button type="button" class="mf-preset-btn" data-preset="2026">Tahun 2026</button>
-          <button type="button" class="mf-preset-btn" data-preset="q1-2026">Q1 2026</button>
-          <button type="button" class="mf-preset-btn" data-preset="q2-2026">Q2 2026</button>
-          <button type="button" class="mf-preset-btn" data-preset="q3-2026">Q3 2026</button>
-          <button type="button" class="mf-preset-btn" data-preset="q4-2026">Q4 2026</button>
-          <button type="button" class="mf-preset-btn" data-preset="latest">Bulan 10 2026 (Terbaru)</button>
+          <button type="button" class="mf-preset-btn" data-preset="2023" data-year="2023">Tahun 2023</button>
+          <button type="button" class="mf-preset-btn" data-preset="2024" data-year="2024">Tahun 2024</button>
+          <button type="button" class="mf-preset-btn" data-preset="2025" data-year="2025">Tahun 2025</button>
+          <button type="button" class="mf-preset-btn" data-preset="2026" data-year="2026">Tahun 2026</button>
+          <button type="button" class="mf-preset-btn" data-preset="latest">Bulan Terbaru</button>
         </div>
       </div>
 
@@ -527,6 +552,11 @@
           </div>
 
           <div class="filter-group">
+            <select id="filterAdmin" class="select-control">
+              <option value="">Semua Admin</option>
+              <option value="NABILA">Admin Nabila</option>
+              <option value="SARAH">Admin Sarah</option>
+            </select>
             <select id="filterRegion" class="select-control">
               <option value="">Semua Region</option>
             </select>
@@ -540,7 +570,7 @@
               <option value="">Semua Bulan</option>
             </select>
             <select id="filterTransferBy" class="select-control">
-              <option value="">Transfer By</option>
+              <option value="">Semua Transfer By</option>
             </select>
             <button class="btn btn-ghost" id="btnResetFilters">Reset Filter</button>
           </div>
@@ -578,6 +608,7 @@
                 <th>PIC</th>
                 <th class="text-right">NOMINAL</th>
                 <th>TRANSFER BY</th>
+                <th width="85">ADMIN</th>
                 <th>STATUS</th>
                 <th width="70">AKSI</th>
               </tr>
@@ -632,6 +663,7 @@
   <script src="chart.min.js"></script>
   <!-- 2. Pre-bundled Data (No Server / No Python Required - works offline & on file://) -->
   <script src="data.js"></script>
+  <script src="data_sarah.js"></script>
   <!-- 3. Application Logic with Direct Google Sheets Sync -->
   <script src="app.js"></script>
 </body>

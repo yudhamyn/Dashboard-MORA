@@ -140,6 +140,110 @@ body {
   font-weight: 500;
 }
 
+/* Admin Switcher Pills (Cockpit Version Control) */
+.admin-switcher-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-pill-group {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-card);
+  padding: 4px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  gap: 4px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.admin-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-main);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.admin-pill-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+}
+
+.admin-pill-btn:active {
+  transform: translateY(0);
+}
+
+.admin-pill-btn.active {
+  color: #ffffff;
+}
+
+/* Nabila Active State: Sky / Cyan Glow */
+.admin-pill-btn[data-admin="nabila"].active {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.85), rgba(14, 165, 233, 0.95));
+  border-color: rgba(56, 189, 248, 0.6);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Sarah Active State: Emerald / Amber Glow */
+.admin-pill-btn[data-admin="sarah"].active {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.85), rgba(5, 150, 105, 0.95));
+  border-color: rgba(52, 211, 153, 0.6);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Combined Active State: Indigo / Violet Glow */
+.admin-pill-btn[data-admin="all"].active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.85), rgba(139, 92, 246, 0.95));
+  border-color: rgba(167, 139, 250, 0.6);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.admin-avatar {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.admin-label-wrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.admin-name {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.admin-count {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.admin-pill-btn.active .admin-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
 .header-right {
   display: flex;
   align-items: center;
@@ -728,6 +832,8 @@ body {
 .badge-warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
 .badge-info { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
 .badge-purple { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+.badge-nabila { background: rgba(56, 189, 248, 0.16); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-weight: 600; }
+.badge-sarah { background: rgba(16, 185, 129, 0.16); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 600; }
 
 .text-success { color: var(--success) !important; }
 .text-danger { color: var(--danger) !important; }
@@ -1282,6 +1388,17 @@ body {
   .flex-1, .flex-2 {
     min-width: 100%;
   }
+
+  .app-header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .admin-switcher-container {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1300,6 +1417,11 @@ body {
   
   .search-box {
     min-width: 100%;
+  }
+
+  .admin-pill-btn {
+    padding: 5px 10px;
+    font-size: 0.75rem;
   }
 }
 

@@ -1,3 +1,5 @@
 # Netlify Proxy Redirects for Google Sheets live data (Pure Web - No Python / No CORS)
-/api/sheets/summary   https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/export?format=csv&gid=1112038042   200!
-/api/sheets/transfer  https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/export?format=csv&gid=747143276    200!
+/api/sheets/summary           https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/export?format=csv&gid=1112038042   200!
+/api/sheets/transfer          https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/export?format=csv&gid=747143276    200!
+/api/sheets/sarah-summary     https://docs.google.com/spreadsheets/d/1mkP9QSlCsPhl-BQ8M8V8DBzPqRoXLkww0HuFUI2n4cc/export?format=csv&gid=50835563     200!
+/api/sheets/sarah-transfer    https://docs.google.com/spreadsheets/d/1mkP9QSlCsPhl-BQ8M8V8DBzPqRoXLkww0HuFUI2n4cc/export?format=csv&gid=857996792    200!

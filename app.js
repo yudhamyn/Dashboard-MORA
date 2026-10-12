@@ -36,7 +36,7 @@ const BASELINE_CHRONO_MONTHS = [
 let CHRONO_MONTHS = [...BASELINE_CHRONO_MONTHS];
 
 function updateChronoMonths(txs, summary) {
-  const monthSet = new Set(BASELINE_CHRONO_MONTHS);
+  const monthSet = new Set();
   if (txs && Array.isArray(txs)) {
     txs.forEach(t => {
       if (t.bulan && t.bulan.trim().startsWith('Bulan ')) {
@@ -50,6 +50,9 @@ function updateChronoMonths(txs, summary) {
         monthSet.add(c.bulan.trim());
       }
     });
+  }
+  if (monthSet.size === 0) {
+    BASELINE_CHRONO_MONTHS.forEach(m => monthSet.add(m));
   }
   CHRONO_MONTHS = Array.from(monthSet).sort((a, b) => parseBulanKey(a) - parseBulanKey(b));
   return CHRONO_MONTHS;
@@ -89,6 +92,17 @@ function formatISODateToDisplay(isoStr) {
   return `${parts[2]} ${months[mIdx] || parts[1]} ${parts[0]}`;
 }
 
+function getEarliestTxDateISO(txs) {
+  const list = txs || state.transactions || [];
+  if (!list.length) return '2023-04-01';
+  let earliest = '9999-99-99';
+  for (let i = 0; i < list.length; i++) {
+    const iso = parseTxDateToISO(list[i].date_trf || list[i].date_req);
+    if (iso && iso < earliest) earliest = iso;
+  }
+  return earliest !== '9999-99-99' ? earliest : '2023-04-01';
+}
+
 function getLatestTxDateISO(txs) {
   const list = txs || state.transactions || [];
   if (!list.length) return '2026-10-11';
@@ -103,6 +117,12 @@ function getLatestTxDateISO(txs) {
 
 // Application State
 const state = {
+  activeAdmin: 'nabila', // 'nabila' | 'sarah' | 'all'
+  adminData: {
+    nabila: { summary: null, transactions: [] },
+    sarah: { summary: null, transactions: [] },
+    all: { summary: null, transactions: [] }
+  },
   summary: null,
   transactions: [],
   masterFilteredTransactions: [],
@@ -121,6 +141,7 @@ const state = {
   },
   filters: {
     search: '',
+    admin: '',
     region: '',
     category: '',
     vendor: '',
@@ -128,6 +149,7 @@ const state = {
     transferBy: ''
   }
 };
+
 
 // Number & Currency Formatters
 const formatRp = (num) => {
@@ -215,8 +237,10 @@ function initEventListeners() {
   });
 
   // Filter dropdowns
-  ['filterRegion', 'filterCategory', 'filterVendor', 'filterBulan', 'filterTransferBy'].forEach(id => {
-    document.getElementById(id).addEventListener('change', (e) => {
+  ['filterAdmin', 'filterRegion', 'filterCategory', 'filterVendor', 'filterBulan', 'filterTransferBy'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', (e) => {
       const key = id.replace('filter', '');
       const stateKey = key.charAt(0).toLowerCase() + key.slice(1);
       state.filters[stateKey] = e.target.value;
@@ -227,15 +251,20 @@ function initEventListeners() {
 
   // Reset Filters
   document.getElementById('btnResetFilters').addEventListener('click', () => {
-    state.filters = { search: '', region: '', category: '', vendor: '', bulan: '', transferBy: '' };
+    state.filters = { search: '', admin: '', region: '', category: '', vendor: '', bulan: '', transferBy: '' };
     searchInput.value = '';
     clearBtn.classList.remove('visible');
-    ['filterRegion', 'filterCategory', 'filterVendor', 'filterBulan', 'filterTransferBy'].forEach(id => {
-      document.getElementById(id).value = '';
+    ['filterAdmin', 'filterRegion', 'filterCategory', 'filterVendor', 'filterBulan', 'filterTransferBy'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
     });
     state.currentPage = 1;
     applyFilters();
   });
+
+  // Admin Switcher Controls
+  initAdminSwitcherEventListeners();
+
 
   // Page Size Selector
   document.getElementById('pageSizeSelect').addEventListener('change', (e) => {
@@ -330,6 +359,287 @@ function revealDashboardAfterSync() {
   if (mainContent) mainContent.style.display = '';
 }
 
+// Admin Switcher Controls
+function initAdminSwitcherEventListeners() {
+  const btns = document.querySelectorAll('.admin-pill-btn');
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const adminKey = btn.dataset.admin;
+      if (adminKey && adminKey !== state.activeAdmin) {
+        switchAdminView(adminKey, true);
+        const nameMap = { nabila: 'Admin Nabila', sarah: 'Admin Sarah', all: 'Gabungan (Nabila + Sarah)' };
+        showToastNotification({
+          type: 'info',
+          title: `Beralih ke Versi ${nameMap[adminKey] || adminKey}`,
+          subtitle: 'Dashboard Berhasil Diperbarui',
+          message: `<p>Menampilkan seluruh rekapan saldo, cash flow, dan riwayat transaksi untuk <strong>${nameMap[adminKey] || adminKey}</strong>.</p>`,
+          stats: [
+            { label: 'Total Transaksi', value: (state.transactions || []).length.toLocaleString('id-ID') + ' Tx', highlight: true },
+            { label: 'Total Cash Out', value: formatRp(state.summary?.balances?.cash_out_num || 0) }
+          ],
+          duration: 3500
+        });
+      }
+    });
+  });
+}
+
+function switchAdminView(adminKey, savePref = true) {
+  if (!state.adminData[adminKey] || !state.adminData[adminKey].summary) {
+    console.warn('Dataset for admin not ready yet:', adminKey);
+    return;
+  }
+
+  state.activeAdmin = adminKey;
+  if (savePref) {
+    try { localStorage.setItem('ebdi_active_admin', adminKey); } catch (e) {}
+  }
+
+  // Update pills UI
+  document.querySelectorAll('.admin-pill-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.admin === adminKey);
+  });
+
+  // Update active state pointers
+  state.summary = state.adminData[adminKey].summary;
+  state.transactions = state.adminData[adminKey].transactions || [];
+  state.masterFilteredTransactions = state.transactions;
+
+  // Update chronological months based on active dataset
+  updateChronoMonths(state.transactions, state.summary);
+
+  // Update master filter dates
+  const minDate = getEarliestTxDateISO(state.transactions);
+  const maxDate = getLatestTxDateISO(state.transactions);
+  const latestMonth = CHRONO_MONTHS[CHRONO_MONTHS.length - 1];
+
+  state.masterFilter.preset = 'all';
+  state.masterFilter.startBulan = CHRONO_MONTHS[0];
+  state.masterFilter.endBulan = latestMonth;
+  state.masterFilter.startDate = minDate;
+  state.masterFilter.endDate = maxDate;
+
+  // Update Admin dropdown in Tab Transaksi:
+  const filterAdmin = document.getElementById('filterAdmin');
+  if (filterAdmin) {
+    if (adminKey === 'all') {
+      filterAdmin.style.display = '';
+      filterAdmin.value = state.filters.admin || '';
+    } else {
+      filterAdmin.style.display = 'none';
+      state.filters.admin = '';
+      filterAdmin.value = '';
+    }
+  }
+
+  // Update brand subtitle with active admin info
+  const subTitle = document.querySelector('.brand-subtitle');
+  if (subTitle) {
+    const adminLabels = {
+      nabila: 'Admin Nabila · ' + (state.adminData.nabila?.transactions?.length || 0).toLocaleString('id-ID') + ' Transaksi',
+      sarah: 'Admin Sarah · ' + (state.adminData.sarah?.transactions?.length || 0).toLocaleString('id-ID') + ' Transaksi',
+      all: 'Gabungan Nabila + Sarah · ' + (state.adminData.all?.transactions?.length || 0).toLocaleString('id-ID') + ' Transaksi'
+    };
+    subTitle.textContent = adminLabels[adminKey] || 'Financial Monitoring & Reimbursement Analytics (Pure Web Base)';
+  }
+
+  // Update switcher count badges
+  const bNabila = document.getElementById('badgeCountNabila');
+  const bSarah = document.getElementById('badgeCountSarah');
+  const bCombined = document.getElementById('badgeCountCombined');
+  if (bNabila && state.adminData.nabila?.transactions) {
+    bNabila.textContent = (state.adminData.nabila.transactions.length / 1000).toFixed(1) + 'K';
+  }
+  if (bSarah && state.adminData.sarah?.transactions) {
+    bSarah.textContent = (state.adminData.sarah.transactions.length / 1000).toFixed(1) + 'K';
+  }
+  if (bCombined && state.adminData.all?.transactions) {
+    bCombined.textContent = (state.adminData.all.transactions.length / 1000).toFixed(1) + 'K';
+  }
+
+  // Populate UI
+  populateSummaryUI(state.summary);
+  populateFilterDropdowns(state.transactions);
+  initMasterFilterControls();
+  updatePresetButtonsVisibility();
+  updateLatestPresetButtonText();
+  applyMasterFilter();
+}
+
+// Helper: Normalize transaction fields for clean filtering and deduplication
+function normalizeTransaction(t, fallbackAdmin = 'NABILA') {
+  if (!t) return t;
+  const admin = t.admin || fallbackAdmin;
+  return {
+    ...t,
+    admin: (admin || 'NABILA').trim().toUpperCase(),
+    region: (t.region || '').trim().toUpperCase(),
+    category: (t.category || '').trim().toUpperCase(),
+    vendor: (t.vendor || '').trim().toUpperCase(),
+    transfer_by: (t.transfer_by || '').trim().toUpperCase(),
+    bulan: (t.bulan || '').trim(),
+    status: (t.status || '').trim().toUpperCase()
+  };
+}
+
+// Create Combined Dataset (Nabila + Sarah)
+function createCombinedDataset(nabilaData, sarahData) {
+  const nSum = nabilaData?.summary || {};
+  const sSum = sarahData?.summary || {};
+  const nTxs = (nabilaData?.transactions || []).map(t => normalizeTransaction(t, 'NABILA'));
+  const sTxs = (sarahData?.transactions || []).map(t => normalizeTransaction(t, 'SARAH'));
+  const combinedTxs = [...nTxs, ...sTxs];
+
+  // 1. Balances
+  const totalKreditNum = (nSum.balances?.total_kredit_num || 0) + (sSum.balances?.total_kredit_num || 0);
+  const cashOutNum = (nSum.balances?.cash_out_num || 0) + (sSum.balances?.cash_out_num || 0);
+  const sisaKreditNum = totalKreditNum - cashOutNum;
+  const bcaNum = (nSum.balances?.bca_num || 0) + (sSum.balances?.bca_num || 0);
+  const mandiriNum = (nSum.balances?.mandiri_num || 0) + (sSum.balances?.mandiri_num || 0);
+
+  const balances = {
+    total_kredit_num: totalKreditNum,
+    total_kredit: formatRp(totalKreditNum),
+    cash_out_num: cashOutNum,
+    cash_out: formatRp(cashOutNum),
+    sisa_kredit_num: sisaKreditNum,
+    sisa_kredit: formatRp(sisaKreditNum),
+    bca_num: bcaNum,
+    bca: formatRp(bcaNum),
+    mandiri_num: mandiriNum,
+    mandiri: formatRp(mandiriNum)
+  };
+
+  // 2. Cash Flow
+  const monthMap = new Map();
+  function addCfItems(cfList) {
+    if (!cfList || !Array.isArray(cfList)) return;
+    cfList.forEach(item => {
+      const b = item.bulan && item.bulan.trim();
+      if (!b || b.toLowerCase().includes('total')) return;
+      if (!monthMap.has(b)) {
+        monthMap.set(b, {
+          bulan: b,
+          kredit_sumbagja_num: 0,
+          kredit_ebdi_num: 0,
+          kredit_nabila_num: 0,
+          cash_out_num: 0
+        });
+      }
+      const e = monthMap.get(b);
+      e.kredit_sumbagja_num += (item.kredit_sumbagja_num || 0);
+      e.kredit_ebdi_num += (item.kredit_ebdi_num || 0);
+      e.kredit_nabila_num += (item.kredit_nabila_num || 0);
+      e.cash_out_num += (item.cash_out_num || 0);
+    });
+  }
+  addCfItems(nSum.cash_flow);
+  addCfItems(sSum.cash_flow);
+
+  const mergedCf = Array.from(monthMap.values()).sort((a, b) => parseBulanKey(a.bulan) - parseBulanKey(b.bulan));
+  let totalSumbagja = 0, totalEbdi = 0, totalNabila = 0, totalCashOut = 0;
+  mergedCf.forEach(m => {
+    totalSumbagja += m.kredit_sumbagja_num;
+    totalEbdi += m.kredit_ebdi_num;
+    totalNabila += m.kredit_nabila_num;
+    totalCashOut += m.cash_out_num;
+    m.kredit_sumbagja = formatRp(m.kredit_sumbagja_num);
+    m.kredit_ebdi = formatRp(m.kredit_ebdi_num);
+    m.kredit_nabila = formatRp(m.kredit_nabila_num);
+    m.cash_out = formatRp(m.cash_out_num);
+  });
+
+  mergedCf.push({
+    bulan: 'Grand Total',
+    kredit_sumbagja_num: totalSumbagja,
+    kredit_sumbagja: formatRp(totalSumbagja),
+    kredit_ebdi_num: totalEbdi,
+    kredit_ebdi: formatRp(totalEbdi),
+    kredit_nabila_num: totalNabila,
+    kredit_nabila: formatRp(totalNabila),
+    cash_out_num: totalCashOut,
+    cash_out: formatRp(totalCashOut)
+  });
+
+  // 3. Cost Detail Matrix
+  const cd1 = nSum.cost_detail;
+  const cd2 = sSum.cost_detail;
+  const regionsSet = new Set();
+  (cd1?.regions || []).forEach(r => { if (r !== 'Grand Total' && r !== 'Total Keseluruhan') regionsSet.add(r); });
+  (cd2?.regions || []).forEach(r => { if (r !== 'Grand Total' && r !== 'Total Keseluruhan') regionsSet.add(r); });
+  const regions = Array.from(regionsSet).sort();
+  regions.push('Grand Total');
+
+  const catMap = new Map();
+  function addRowsToCatMap(cd) {
+    if (!cd || !cd.rows) return;
+    cd.rows.forEach(row => {
+      const cat = row.category;
+      if (!catMap.has(cat)) {
+        catMap.set(cat, {});
+        regions.forEach(reg => { catMap.get(cat)[reg] = 0; });
+      }
+      const targetVals = catMap.get(cat);
+      Object.keys(row.values || {}).forEach(reg => {
+        if (reg === 'Total Keseluruhan' || reg === 'Grand Total') {
+          targetVals['Grand Total'] = (targetVals['Grand Total'] || 0) + (row.values[reg]?.num || 0);
+        } else if (targetVals[reg] !== undefined) {
+          targetVals[reg] = (targetVals[reg] || 0) + (row.values[reg]?.num || 0);
+        }
+      });
+    });
+  }
+  addRowsToCatMap(cd1);
+  addRowsToCatMap(cd2);
+
+  const costDetailRows = [];
+  const grandTotalVals = {};
+  regions.forEach(reg => { grandTotalVals[reg] = { text: 'Rp 0', num: 0 }; });
+
+  Array.from(catMap.keys()).sort().forEach(cat => {
+    const rawVals = catMap.get(cat);
+    const valObjs = {};
+    let rowSum = 0;
+    regions.forEach(reg => {
+      if (reg !== 'Grand Total') {
+        const n = rawVals[reg] || 0;
+        valObjs[reg] = { text: n ? formatRp(n) : '-', num: n };
+        rowSum += n;
+        grandTotalVals[reg].num += n;
+      }
+    });
+    valObjs['Grand Total'] = { text: formatRp(rowSum), num: rowSum };
+    grandTotalVals['Grand Total'].num += rowSum;
+    costDetailRows.push({ category: cat, values: valObjs });
+  });
+
+  regions.forEach(reg => {
+    grandTotalVals[reg].text = formatRp(grandTotalVals[reg].num);
+  });
+
+  const costDetail = {
+    regions: regions,
+    rows: costDetailRows,
+    grand_total: grandTotalVals
+  };
+
+  // 4. Today cost: take latest between Nabila and Sarah
+  const chosenToday = (nSum.today_cost && nSum.today_cost.total_transaction) ? nSum.today_cost : (sSum.today_cost || {});
+
+  return {
+    summary: {
+      today_cost: chosenToday,
+      balances: balances,
+      cash_flow: mergedCf,
+      cost_detail: costDetail,
+      price_by_region: [],
+      price_by_bulan: [],
+      price_by_category_region: { regions: [], rows: [], grand_total: {} }
+    },
+    transactions: combinedTxs
+  };
+}
+
 // Load Dashboard Data
 function loadDashboardData() {
   updateSyncBadgeUI();
@@ -351,86 +661,59 @@ function loadDashboardData() {
 
   revealDashboardAfterSync();
 
-  // Check if localStorage has newer cached data from a live sync
-  try {
-    const cachedSummary = localStorage.getItem('ebdi_cached_summary');
-    const cachedTxs = localStorage.getItem('ebdi_cached_txs');
-    const bundledCount = (window.EBDI_TRANSACTIONS && window.EBDI_TRANSACTIONS.length) || 0;
-    if (cachedSummary && cachedTxs) {
-      const parsedSum = JSON.parse(cachedSummary);
-      const parsedTxs = JSON.parse(cachedTxs);
-      // Only use localStorage if it has at least as many transactions as the bundled data
-      if (parsedSum && parsedTxs && parsedTxs.length >= bundledCount && parsedTxs.length >= 23700) {
-        state.summary = parsedSum;
-        state.transactions = parsedTxs;
-        state.masterFilteredTransactions = parsedTxs;
-        updateChronoMonths(state.transactions, state.summary);
-        const maxDate = getLatestTxDateISO(state.transactions);
-        const latestMonth = CHRONO_MONTHS[CHRONO_MONTHS.length - 1];
-        if (state.masterFilter.preset === 'all') {
-          state.masterFilter.endBulan = latestMonth;
-          state.masterFilter.endDate = maxDate;
-        }
-        populateFilterDropdowns(state.transactions);
-        populateSummaryUI(state.summary);
-        initMasterFilterControls();
-        updateLatestPresetButtonText();
-        applyMasterFilter();
-        updateSyncBadgeUI();
-        return;
-      }
-    }
-  } catch (e) {
-    console.warn('Local cache check notice:', e);
-  }
-
-  // Check if data is already available via data.js (Pure Web, No Python / Server needed)
+  // 1. Initialize Nabila data from pre-bundled data.js
   if (window.EBDI_SUMMARY) {
-    state.summary = window.EBDI_SUMMARY;
-
-    if (window.EBDI_TRANSACTIONS && window.EBDI_TRANSACTIONS.length) {
-      state.transactions = window.EBDI_TRANSACTIONS;
-      state.masterFilteredTransactions = window.EBDI_TRANSACTIONS;
-      updateChronoMonths(state.transactions, state.summary);
-      const maxDate = getLatestTxDateISO(state.transactions);
-      const latestMonth = CHRONO_MONTHS[CHRONO_MONTHS.length - 1];
-      if (state.masterFilter.preset === 'all') {
-        state.masterFilter.endBulan = latestMonth;
-        state.masterFilter.endDate = maxDate;
-      }
-      populateFilterDropdowns(state.transactions);
-      try {
-        localStorage.setItem('ebdi_cached_summary', JSON.stringify(state.summary));
-        localStorage.setItem('ebdi_cached_txs', JSON.stringify(state.transactions));
-      } catch (e) {}
-    }
-
-    populateSummaryUI(state.summary);
-    initMasterFilterControls();
-    updateLatestPresetButtonText();
-    applyMasterFilter();
-    updateSyncBadgeUI();
-    return;
+    state.adminData.nabila.summary = window.EBDI_SUMMARY;
+  }
+  if (window.EBDI_TRANSACTIONS) {
+    state.adminData.nabila.transactions = window.EBDI_TRANSACTIONS.map(t => normalizeTransaction(t, 'NABILA'));
   }
 
-  // Fallback: If hosted on a server, try fetch
-  const badgeText = document.getElementById('syncStatusText');
-  if (badgeText) badgeText.textContent = 'Memuat data...';
-  fetch('summary.json')
-    .then(res => res.json())
-    .then(data => {
-      state.summary = data;
-      updateChronoMonths(state.transactions, state.summary);
-      populateSummaryUI(state.summary);
-      initMasterFilterControls();
-      updateLatestPresetButtonText();
-      applyMasterFilter();
-      updateSyncBadgeUI();
-    })
-    .catch(err => {
-      console.warn('Local JSON load fallback error:', err);
-      updateSyncBadgeUI();
-    });
+  // 2. Initialize Sarah data from pre-bundled data_sarah.js
+  if (window.SARAH_SUMMARY) {
+    state.adminData.sarah.summary = window.SARAH_SUMMARY;
+  }
+  if (window.SARAH_TRANSACTIONS) {
+    state.adminData.sarah.transactions = window.SARAH_TRANSACTIONS.map(t => normalizeTransaction(t, 'SARAH'));
+  }
+
+  // 3. Fallback to fetch summary.json / summary_sarah.json if not in window
+  const loadPromises = [];
+  if (!state.adminData.nabila.summary) {
+    loadPromises.push(
+      fetch('summary.json').then(r => r.json()).then(data => {
+        state.adminData.nabila.summary = data;
+      }).catch(e => console.warn('Nabila JSON fallback notice:', e))
+    );
+  }
+  if (!state.adminData.sarah.summary) {
+    loadPromises.push(
+      fetch('summary_sarah.json').then(r => r.json()).then(data => {
+        state.adminData.sarah.summary = data;
+      }).catch(e => console.warn('Sarah JSON fallback notice:', e))
+    );
+  }
+
+  function buildAndActivate() {
+    if (state.adminData.nabila.summary && state.adminData.sarah.summary) {
+      state.adminData.all = createCombinedDataset(state.adminData.nabila, state.adminData.sarah);
+    } else if (state.adminData.nabila.summary) {
+      state.adminData.all = { ...state.adminData.nabila };
+    } else if (state.adminData.sarah.summary) {
+      state.adminData.all = { ...state.adminData.sarah };
+    }
+
+    const savedAdmin = localStorage.getItem('ebdi_active_admin') || 'nabila';
+    const targetAdmin = (state.adminData[savedAdmin] && state.adminData[savedAdmin].summary) ? savedAdmin : 'nabila';
+    switchAdminView(targetAdmin, false);
+    updateSyncBadgeUI();
+  }
+
+  if (loadPromises.length > 0) {
+    Promise.all(loadPromises).then(buildAndActivate);
+  } else {
+    buildAndActivate();
+  }
 }
 
 // CSV Parser Helper supporting multi-line strings and quotes
@@ -650,8 +933,102 @@ function parseSummaryCSV(text) {
   return summary;
 }
 
+// Parse Sarah Summary EBDI CSV format
+function parseSarahSummaryCSV(text) {
+  const rows = parseCSV(text);
+  const summary = {
+    today_cost: { date: '19-Feb-26', total_transaction: 47, total_cost: 'Rp 27.151.714', total_cost_num: 27151714 },
+    balances: {
+      total_kredit: 'Rp 0', total_kredit_num: 0,
+      cash_out: 'Rp 0', cash_out_num: 0,
+      sisa_kredit: 'Rp 0', sisa_kredit_num: 0,
+      bca: 'Rp 0', bca_num: 0,
+      mandiri: 'Rp 0', mandiri_num: 0
+    },
+    cash_flow: [],
+    cost_detail: { regions: [], rows: [], grand_total: {} },
+    price_by_region: [],
+    price_by_bulan: [],
+    price_by_category_region: { regions: [], rows: [], grand_total: {} }
+  };
+
+  // 1. Cash flow & Balances
+  for (let idx = 0; idx < rows.length; idx++) {
+    const r = rows[idx];
+    if (!r || !r.length) continue;
+    const firstCell = (r[0] || '').trim();
+    const firstCellUpper = firstCell.toUpperCase();
+
+    // Cash flow row: Bulan X YYYY
+    if (firstCell.startsWith('Bulan ')) {
+      const sumbagja = parseCurrency(r[1]);
+      const ebdi = parseCurrency(r[2]);
+      const out = parseCurrency(r[3]);
+      summary.cash_flow.push({
+        bulan: firstCell,
+        kredit_sumbagja: (r[1] || '-').trim(),
+        kredit_sumbagja_num: sumbagja,
+        kredit_ebdi: (r[2] || '-').trim(),
+        kredit_ebdi_num: ebdi,
+        kredit_nabila: 'Rp -',
+        kredit_nabila_num: 0,
+        cash_out: (r[3] || '-').trim(),
+        cash_out_num: out
+      });
+    }
+
+    // Balances
+    if (firstCellUpper === 'KREDIT' && !summary.balances.total_kredit_num) {
+      const val = (r[1] || '').trim();
+      summary.balances.total_kredit = 'Rp ' + val;
+      summary.balances.total_kredit_num = parseCurrency(val);
+    } else if (firstCellUpper === 'DEBIT' && !summary.balances.cash_out_num) {
+      const val = (r[1] || '').trim();
+      summary.balances.cash_out = 'Rp ' + val;
+      summary.balances.cash_out_num = parseCurrency(val);
+    } else if (firstCellUpper === 'SISA SALDO' && !summary.balances.sisa_kredit_num) {
+      const val = (r[1] || '').trim();
+      summary.balances.sisa_kredit = 'Rp ' + val;
+      summary.balances.sisa_kredit_num = parseCurrency(val);
+    }
+  }
+
+  // 2. Cost Detail Matrix
+  const cdIdx = rows.findIndex(r => (r[0] || '').trim().toUpperCase() === 'KATEGORY');
+  if (cdIdx !== -1 && rows[cdIdx]) {
+    const hdrRow = rows[cdIdx];
+    const rawRegions = [];
+    for (let c = 2; c < hdrRow.length; c++) {
+      const cell = (hdrRow[c] || '').trim();
+      if (cell) rawRegions.push(cell);
+    }
+    const regions = rawRegions.map(reg => reg === 'Total Keseluruhan' ? 'Grand Total' : reg);
+    summary.cost_detail.regions = regions;
+
+    for (let i = cdIdx + 1; i < rows.length; i++) {
+      const r = rows[i];
+      const cat = (r[0] || '').trim();
+      if (!cat) continue;
+      const vals = {};
+      regions.forEach((reg, j) => {
+        const colIdx = j + 2;
+        const valStr = (r[colIdx] || '').trim();
+        vals[reg] = { text: valStr ? 'Rp ' + valStr : '-', num: parseCurrency(valStr) };
+      });
+      if (cat === 'Total Keseluruhan') {
+        summary.cost_detail.grand_total = vals;
+        break;
+      } else {
+        summary.cost_detail.rows.push({ category: cat, values: vals });
+      }
+    }
+  }
+
+  return summary;
+}
+
 // Parse Transfer EBDI CSV into transaction objects
-function parseTransferCSV(text) {
+function parseTransferCSV(text, adminTag = 'NABILA') {
   const rows = parseCSV(text);
   const txs = [];
   for (let i = 2; i < rows.length; i++) {
@@ -669,7 +1046,7 @@ function parseTransferCSV(text) {
 
     const priceNum = parseCurrency(priceStr);
 
-    txs.push({
+    txs.push(normalizeTransaction({
       no: no,
       vendor: vendor,
       program: (r[2] || '').trim(),
@@ -685,8 +1062,9 @@ function parseTransferCSV(text) {
       pic: (r[19] || '').trim(),
       status: (r[21] || '').trim(),
       bulan: (r[22] || '').trim(),
-      transfer_by: (r[23] || '').trim()
-    });
+      transfer_by: (r[23] || '').trim(),
+      admin: adminTag
+    }, adminTag));
   }
   return txs;
 }
@@ -832,16 +1210,28 @@ async function syncDataDirectFromGoogleSheets() {
   if (badgeText) badgeText.textContent = 'Menghubungi Google Sheets...';
 
   const ts = Date.now();
-  const summaryUrls = [
+  const nabilaSummaryUrls = [
     `https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/export?format=csv&gid=1112038042&t=${ts}`,
     `/api/sheets/summary?t=${ts}`,
     `https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/gviz/tq?tqx=out:csv&gid=1112038042&t=${ts}`
   ];
 
-  const transferUrls = [
+  const nabilaTransferUrls = [
     `https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/export?format=csv&gid=747143276&t=${ts}`,
     `/api/sheets/transfer?t=${ts}`,
     `https://docs.google.com/spreadsheets/d/1wQV3dYvMY5XaJNkw7y-4ZycZ8VmJcScQPRTFp1wSvnY/gviz/tq?tqx=out:csv&gid=747143276&t=${ts}`
+  ];
+
+  const sarahSummaryUrls = [
+    `https://docs.google.com/spreadsheets/d/1mkP9QSlCsPhl-BQ8M8V8DBzPqRoXLkww0HuFUI2n4cc/export?format=csv&gid=50835563&t=${ts}`,
+    `/api/sheets/sarah-summary?t=${ts}`,
+    `https://docs.google.com/spreadsheets/d/1mkP9QSlCsPhl-BQ8M8V8DBzPqRoXLkww0HuFUI2n4cc/gviz/tq?tqx=out:csv&gid=50835563&t=${ts}`
+  ];
+
+  const sarahTransferUrls = [
+    `https://docs.google.com/spreadsheets/d/1mkP9QSlCsPhl-BQ8M8V8DBzPqRoXLkww0HuFUI2n4cc/export?format=csv&gid=857996792&t=${ts}`,
+    `/api/sheets/sarah-transfer?t=${ts}`,
+    `https://docs.google.com/spreadsheets/d/1mkP9QSlCsPhl-BQ8M8V8DBzPqRoXLkww0HuFUI2n4cc/gviz/tq?tqx=out:csv&gid=857996792&t=${ts}`
   ];
 
   async function fetchWithFallback(urls, label) {
@@ -864,50 +1254,42 @@ async function syncDataDirectFromGoogleSheets() {
   if (btnPromptText) btnPromptText.textContent = 'Menghubungkan ke Google Sheets...';
 
   try {
-    badgeText.textContent = 'Mengunduh Summary EBDI...';
-    if (btnPromptText) btnPromptText.textContent = 'Mengunduh Summary EBDI...';
-    const summaryCsv = await fetchWithFallback(summaryUrls, 'Summary EBDI');
-    const newSummary = parseSummaryCSV(summaryCsv);
-    if (newSummary && newSummary.cash_flow && newSummary.cash_flow.length) {
-      state.summary = newSummary;
-      populateSummaryUI(state.summary);
-    }
+    badgeText.textContent = 'Mengunduh Summary Nabila & Sarah...';
+    if (btnPromptText) btnPromptText.textContent = 'Mengunduh Summary Nabila & Sarah...';
 
-    badgeText.textContent = 'Mengunduh Transaksi EBDI (24K+)...';
-    if (btnPromptText) btnPromptText.textContent = 'Mengunduh Transaksi EBDI (24K+)...';
-    const transferCsv = await fetchWithFallback(transferUrls, 'Transaksi EBDI');
-    const newTxs = parseTransferCSV(transferCsv);
-    if (newTxs && newTxs.length) {
-      state.transactions = newTxs;
-      state.masterFilteredTransactions = newTxs;
-      updateChronoMonths(state.transactions, state.summary);
-      populateFilterDropdowns(state.transactions);
+    const [nabilaSummaryCsv, sarahSummaryCsv] = await Promise.all([
+      fetchWithFallback(nabilaSummaryUrls, 'Summary Nabila'),
+      fetchWithFallback(sarahSummaryUrls, 'Summary Sarah')
+    ]);
 
-      // Dynamically update max date and months of master filter
-      const latestISO = getLatestTxDateISO(newTxs);
-      const latestMonth = CHRONO_MONTHS[CHRONO_MONTHS.length - 1];
-      const endDateInput = document.getElementById('mfEndDate');
-      if (endDateInput) {
-        endDateInput.max = latestISO;
-        if (!state.masterFilter.endDate || state.masterFilter.endDate < latestISO || state.masterFilter.preset === 'all' || state.masterFilter.preset === 'latest' || state.masterFilter.preset === '2026') {
-          state.masterFilter.endDate = latestISO;
-          endDateInput.value = latestISO;
-        }
-      }
-      if (state.masterFilter.preset === 'all' || state.masterFilter.preset === '2026') {
-        state.masterFilter.endBulan = latestMonth;
-      } else if (state.masterFilter.preset === 'latest') {
-        state.masterFilter.startBulan = latestMonth;
-        state.masterFilter.endBulan = latestMonth;
-      }
-      initMasterFilterControls();
-      updateLatestPresetButtonText();
-    }
+    const newNabilaSummary = parseSummaryCSV(nabilaSummaryCsv);
+    const newSarahSummary = parseSarahSummaryCSV(sarahSummaryCsv);
 
-    // Re-apply Master Filter
-    applyMasterFilter();
+    badgeText.textContent = 'Mengunduh Transaksi Nabila & Sarah (84K+)...';
+    if (btnPromptText) btnPromptText.textContent = 'Mengunduh Transaksi Nabila & Sarah (84K+)...';
 
-    // Reveal full dashboard panels
+    const [nabilaTransferCsv, sarahTransferCsv] = await Promise.all([
+      fetchWithFallback(nabilaTransferUrls, 'Transaksi Nabila'),
+      fetchWithFallback(sarahTransferUrls, 'Transaksi Sarah')
+    ]);
+
+    const newNabilaTxs = parseTransferCSV(nabilaTransferCsv, 'NABILA');
+    const newSarahTxs = parseTransferCSV(sarahTransferCsv, 'SARAH');
+
+    state.adminData.nabila = {
+      summary: newNabilaSummary,
+      transactions: newNabilaTxs
+    };
+    state.adminData.sarah = {
+      summary: newSarahSummary,
+      transactions: newSarahTxs
+    };
+    state.adminData.all = createCombinedDataset(state.adminData.nabila, state.adminData.sarah);
+
+    // Refresh active view
+    switchAdminView(state.activeAdmin, false);
+
+    // Reveal dashboard panels
     revealDashboardAfterSync();
     if (btnPromptText) btnPromptText.textContent = 'Sinkronkan Data Sekarang';
 
@@ -916,14 +1298,6 @@ async function syncDataDirectFromGoogleSheets() {
     const timeStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
     localStorage.setItem('ebdi_last_refresh', timeStr);
 
-    // Save to localStorage cache for offline persistence
-    try {
-      localStorage.setItem('ebdi_cached_summary', JSON.stringify(state.summary));
-      localStorage.setItem('ebdi_cached_txs', JSON.stringify(state.transactions));
-    } catch (e) {
-      console.warn('Storage cache notice:', e);
-    }
-
     if (badge) {
       badge.style.borderColor = '';
       badge.style.color = '';
@@ -931,17 +1305,16 @@ async function syncDataDirectFromGoogleSheets() {
     }
     updateSyncBadgeUI(timeStr);
 
-    // Show sleek glassmorphic Toast notification
     showToastNotification({
       type: 'success',
-      title: 'Data Berhasil Disinkronkan!',
-      subtitle: 'Google Sheets Live Sync Aktif',
-      message: '<p>Seluruh metrik kalkulasi keuangan, saldo bank, dan data transaksi telah diperbarui secara langsung ke versi terbaru.</p>',
+      title: 'Sinkronisasi 2 Admin Berhasil!',
+      subtitle: 'Google Sheets Live Sync Aktif (Nabila & Sarah)',
+      message: '<p>Seluruh data dari spreadsheet <strong>Nabila</strong> dan <strong>Sarah</strong> telah berhasil diperbarui dan digabungkan secara otomatis.</p>',
       stats: [
-        { label: 'Total Transaksi', value: (state.transactions || []).length.toLocaleString('id-ID') + ' Tx', highlight: true },
-        { label: 'Waktu Refresh', value: timeStr },
-        { label: 'Total Cash Out', value: formatRp(state.summary?.balances?.cash_out_num || 0) },
-        { label: 'Status Data', value: '100% Up to Date' }
+        { label: 'Tx Nabila', value: newNabilaTxs.length.toLocaleString('id-ID') + ' Tx' },
+        { label: 'Tx Sarah', value: newSarahTxs.length.toLocaleString('id-ID') + ' Tx' },
+        { label: 'Total Gabungan', value: (state.adminData.all.transactions || []).length.toLocaleString('id-ID') + ' Tx', highlight: true },
+        { label: 'Total Cash Out Gabungan', value: formatRp(state.adminData.all.summary?.balances?.cash_out_num || 0) }
       ],
       action: {
         label: 'Lihat Transaksi ➔',
@@ -950,7 +1323,7 @@ async function syncDataDirectFromGoogleSheets() {
           if (tabBtn) tabBtn.click();
         }
       },
-      duration: 6500
+      duration: 7500
     });
   } catch (err) {
     console.error('Google Sheets sync notice:', err);
@@ -963,20 +1336,28 @@ async function syncDataDirectFromGoogleSheets() {
     const savedTime = localStorage.getItem('ebdi_last_refresh') || 'Data Bundled Lokal';
 
     // Fallback for file:// or offline mode to ensure dashboard is unlocked
-    if (!state.summary && window.EBDI_SUMMARY) {
-      state.summary = window.EBDI_SUMMARY;
-      state.transactions = window.EBDI_TRANSACTIONS || [];
-      state.masterFilteredTransactions = state.transactions;
-      updateChronoMonths(state.transactions, state.summary);
-      populateFilterDropdowns(state.transactions);
-      populateSummaryUI(state.summary);
-      initMasterFilterControls();
-      applyMasterFilter();
-      const now = new Date();
-      const timeStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
-      localStorage.setItem('ebdi_last_refresh', timeStr);
-      updateSyncBadgeUI(timeStr);
+    if (!state.adminData.nabila.summary && window.EBDI_SUMMARY) {
+      state.adminData.nabila = {
+        summary: window.EBDI_SUMMARY,
+        transactions: (window.EBDI_TRANSACTIONS || []).map(t => normalizeTransaction(t, 'NABILA'))
+      };
     }
+    if (!state.adminData.sarah.summary && window.SARAH_SUMMARY) {
+      state.adminData.sarah = {
+        summary: window.SARAH_SUMMARY,
+        transactions: (window.SARAH_TRANSACTIONS || []).map(t => normalizeTransaction(t, 'SARAH'))
+      };
+    }
+    if (state.adminData.nabila.summary && state.adminData.sarah.summary) {
+      state.adminData.all = createCombinedDataset(state.adminData.nabila, state.adminData.sarah);
+    }
+    switchAdminView(state.activeAdmin, false);
+
+    const now = new Date();
+    const timeStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+    localStorage.setItem('ebdi_last_refresh', timeStr);
+    updateSyncBadgeUI(timeStr);
+
     revealDashboardAfterSync();
     if (btnPromptText) btnPromptText.textContent = 'Sinkronkan Data Sekarang';
 
@@ -986,11 +1367,12 @@ async function syncDataDirectFromGoogleSheets() {
       title: isFileProtocol ? 'Informasi Sinkronisasi Lokal' : 'Gagal Menghubungi Google Sheets',
       subtitle: isFileProtocol ? 'Mode Offline / Protokol Berkas' : 'Periksa Koneksi Internet Anda',
       message: isFileProtocol
-        ? '<p>Saat dibuka secara lokal (<code>file://</code>), browser membatasi CORS langsung ke Google Sheets. Di hosting <strong>Netlify</strong> atau web server, sinkronisasi otomatis berjalan lancar.</p><p style="color:var(--text-primary); font-size:0.8rem; margin-top:4px;">✓ Data lokal Anda tetap <strong>100% lengkap</strong> dan siap digunakan.</p>'
+        ? '<p>Saat dibuka secara lokal (<code>file://</code>), browser membatasi CORS langsung ke Google Sheets. Di hosting <strong>Netlify</strong> atau web server, sinkronisasi otomatis berjalan lancar.</p><p style="color:var(--text-primary); font-size:0.8rem; margin-top:4px;">✓ Seluruh data Nabila (24K+) dan Sarah (59K+) tetap <strong>100% lengkap</strong> dan siap digunakan.</p>'
         : `<p>Gagal menghubungi Google Sheets (${err.message}). Pastikan koneksi internet Anda aktif.</p>`,
       stats: [
-        { label: 'Transaksi Tersedia', value: (state.transactions || []).length.toLocaleString('id-ID') + ' Tx', highlight: true },
-        { label: 'Data Terakhir', value: savedTime }
+        { label: 'Total Transaksi Nabila', value: (state.adminData.nabila.transactions || []).length.toLocaleString('id-ID') + ' Tx' },
+        { label: 'Total Transaksi Sarah', value: (state.adminData.sarah.transactions || []).length.toLocaleString('id-ID') + ' Tx' },
+        { label: 'Total Gabungan', value: (state.adminData.all.transactions || []).length.toLocaleString('id-ID') + ' Tx', highlight: true }
       ],
       action: {
         label: 'Lihat Transaksi ➔',
@@ -1494,6 +1876,22 @@ function updateLatestPresetButtonText() {
   }
 }
 
+function updatePresetButtonsVisibility() {
+  const yearsPresent = new Set();
+  CHRONO_MONTHS.forEach(m => {
+    const yr = m.match(/\d{4}/);
+    if (yr) yearsPresent.add(yr[0]);
+  });
+  document.querySelectorAll('.mf-preset-btn[data-year]').forEach(btn => {
+    const yr = btn.dataset.year;
+    if (yearsPresent.has(yr)) {
+      btn.style.display = '';
+    } else {
+      btn.style.display = 'none';
+    }
+  });
+}
+
 function initMasterFilterControls() {
   const startSelect = document.getElementById('mfStartBulan');
   const endSelect = document.getElementById('mfEndBulan');
@@ -1518,22 +1916,24 @@ function initMasterFilterControls() {
     endSelect.value = state.masterFilter.endBulan || CHRONO_MONTHS[CHRONO_MONTHS.length - 1];
   }
 
+  const minDate = getEarliestTxDateISO(state.transactions);
   const maxDate = getLatestTxDateISO(state.transactions);
   const startDateInput = document.getElementById('mfStartDate');
   const endDateInput = document.getElementById('mfEndDate');
   if (startDateInput) {
-    startDateInput.min = '2025-08-01';
+    startDateInput.min = minDate;
     startDateInput.max = maxDate;
-    startDateInput.value = state.masterFilter.startDate || '2025-08-01';
+    startDateInput.value = state.masterFilter.startDate || minDate;
   }
   if (endDateInput) {
-    endDateInput.min = '2025-08-01';
+    endDateInput.min = minDate;
     endDateInput.max = maxDate;
     if (!state.masterFilter.endDate || state.masterFilter.endDate < maxDate) {
       state.masterFilter.endDate = maxDate;
     }
     endDateInput.value = state.masterFilter.endDate;
   }
+  updatePresetButtonsVisibility();
   updateLatestPresetButtonText();
 }
 
@@ -1596,43 +1996,35 @@ function applyMasterFilterPreset(presetKey) {
   });
   state.masterFilter.preset = presetKey;
 
+  const minDate = getEarliestTxDateISO(state.transactions);
   const maxDate = getLatestTxDateISO(state.transactions);
   const latestMonth = CHRONO_MONTHS[CHRONO_MONTHS.length - 1] || 'Bulan 10 2026';
   const mf = state.masterFilter;
+
   if (presetKey === 'all') {
-    mf.startBulan = CHRONO_MONTHS[0] || 'Bulan 8 2025';
+    mf.startBulan = CHRONO_MONTHS[0] || 'Bulan 4 2023';
     mf.endBulan = latestMonth;
-    mf.startDate = '2025-08-01';
+    mf.startDate = minDate;
     mf.endDate = maxDate;
+  } else if (presetKey === '2023') {
+    mf.startBulan = CHRONO_MONTHS.find(m => m.endsWith('2023')) || 'Bulan 4 2023';
+    mf.endBulan = [...CHRONO_MONTHS].reverse().find(m => m.endsWith('2023')) || 'Bulan 12 2023';
+    mf.startDate = '2023-01-01';
+    mf.endDate = '2023-12-31';
+  } else if (presetKey === '2024') {
+    mf.startBulan = CHRONO_MONTHS.find(m => m.endsWith('2024')) || 'Bulan 1 2024';
+    mf.endBulan = [...CHRONO_MONTHS].reverse().find(m => m.endsWith('2024')) || 'Bulan 12 2024';
+    mf.startDate = '2024-01-01';
+    mf.endDate = '2024-12-31';
   } else if (presetKey === '2025') {
-    mf.startBulan = 'Bulan 8 2025';
-    mf.endBulan = 'Bulan 12 2025';
-    mf.startDate = '2025-08-01';
+    mf.startBulan = CHRONO_MONTHS.find(m => m.endsWith('2025')) || 'Bulan 1 2025';
+    mf.endBulan = [...CHRONO_MONTHS].reverse().find(m => m.endsWith('2025')) || 'Bulan 12 2025';
+    mf.startDate = '2025-01-01';
     mf.endDate = '2025-12-31';
   } else if (presetKey === '2026') {
-    mf.startBulan = 'Bulan 1 2026';
+    mf.startBulan = CHRONO_MONTHS.find(m => m.endsWith('2026')) || 'Bulan 1 2026';
     mf.endBulan = latestMonth;
     mf.startDate = '2026-01-01';
-    mf.endDate = maxDate;
-  } else if (presetKey === 'q1-2026') {
-    mf.startBulan = 'Bulan 1 2026';
-    mf.endBulan = 'Bulan 3 2026';
-    mf.startDate = '2026-01-01';
-    mf.endDate = '2026-03-31';
-  } else if (presetKey === 'q2-2026') {
-    mf.startBulan = 'Bulan 4 2026';
-    mf.endBulan = 'Bulan 6 2026';
-    mf.startDate = '2026-04-01';
-    mf.endDate = '2026-06-30';
-  } else if (presetKey === 'q3-2026') {
-    mf.startBulan = 'Bulan 7 2026';
-    mf.endBulan = 'Bulan 9 2026';
-    mf.startDate = '2026-07-01';
-    mf.endDate = '2026-09-30';
-  } else if (presetKey === 'q4-2026') {
-    mf.startBulan = 'Bulan 10 2026';
-    mf.endBulan = 'Bulan 12 2026';
-    mf.startDate = '2026-10-01';
     mf.endDate = maxDate;
   } else if (presetKey === 'latest') {
     mf.startBulan = latestMonth;
@@ -1666,6 +2058,7 @@ function applyMasterFilterPreset(presetKey) {
 // Master Filter: Core Application Function
 function applyMasterFilter() {
   const mf = state.masterFilter;
+  const minDate = getEarliestTxDateISO(state.transactions);
   const maxDate = getLatestTxDateISO(state.transactions);
   let activeMonths = [];
   let isAll = false;
@@ -1691,7 +2084,7 @@ function applyMasterFilter() {
     state.masterFilteredTransactions = (state.transactions || []).filter(t => monthsSet.has(t.bulan));
   } else {
     // Tanggal Mode
-    let start = mf.startDate || '2025-08-01';
+    let start = mf.startDate || minDate;
     let end = mf.endDate || maxDate;
     if (start > end) {
       const temp = start; start = end; end = temp;
@@ -1702,7 +2095,7 @@ function applyMasterFilter() {
       if (startDateInput) startDateInput.value = start;
       if (endDateInput) endDateInput.value = end;
     }
-    isAll = (start <= '2025-08-01' && end >= maxDate);
+    isAll = (start <= minDate && end >= maxDate);
 
     state.masterFilteredTransactions = (state.transactions || []).filter(t => {
       const iso = parseTxDateToISO(t.date_trf || t.date_req);
@@ -1996,8 +2389,10 @@ function updateMasterFilterStatusUI(totalKredit, totalCashOut, activeMonths, isA
   }
 }
 
-// Populate Filter Dropdowns from Transactions
+// Populate Filter Dropdowns from Transactions (Deduplicated, Normalized & Chronological)
 function populateFilterDropdowns(txs) {
+  if (!txs || !Array.isArray(txs)) return;
+
   const regions = new Set();
   const categories = new Set();
   const vendors = new Set();
@@ -2005,49 +2400,116 @@ function populateFilterDropdowns(txs) {
   const transferBys = new Set();
 
   txs.forEach(t => {
-    if (t.region) regions.add(t.region);
-    if (t.category) categories.add(t.category);
-    if (t.vendor) vendors.add(t.vendor);
-    if (t.bulan) bulans.add(t.bulan);
-    if (t.transfer_by) transferBys.add(t.transfer_by);
+    if (t.region) {
+      const reg = t.region.trim().toUpperCase();
+      if (reg) regions.add(reg);
+    }
+    if (t.category) {
+      const cat = t.category.trim().toUpperCase();
+      if (cat) categories.add(cat);
+    }
+    if (t.vendor) {
+      const ven = t.vendor.trim().toUpperCase();
+      if (ven) vendors.add(ven);
+    }
+    if (t.bulan) {
+      const bln = t.bulan.trim();
+      if (bln) bulans.add(bln);
+    }
+    if (t.transfer_by) {
+      const trf = t.transfer_by.trim().toUpperCase();
+      if (trf) transferBys.add(trf);
+    }
   });
 
-  const addOptions = (selectId, set) => {
+  const rebuildSelect = (selectId, set, defaultText, isBulan = false, filterKey = '') => {
     const select = document.getElementById(selectId);
-    const sorted = Array.from(set).sort();
-    sorted.forEach(val => {
+    if (!select) return;
+
+    // Capture currently selected value if any
+    const currentValue = select.value || (filterKey && state.filters ? state.filters[filterKey] : '');
+
+    // Reset dropdown options completely to eliminate all duplicates
+    select.innerHTML = '';
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = defaultText;
+    select.appendChild(defaultOpt);
+
+    let sortedList;
+    if (isBulan) {
+      sortedList = Array.from(set).sort((a, b) => parseBulanKey(a) - parseBulanKey(b));
+    } else {
+      sortedList = Array.from(set).sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }));
+    }
+
+    let foundMatch = false;
+    sortedList.forEach(val => {
+      if (!val) return;
       const opt = document.createElement('option');
       opt.value = val;
       opt.textContent = val;
+      if (currentValue && (currentValue.toUpperCase() === val.toUpperCase() || currentValue === val)) {
+        opt.selected = true;
+        foundMatch = true;
+      }
       select.appendChild(opt);
     });
+
+    // If active filter was set but doesn't exist in new dataset, reset it cleanly
+    if (filterKey && state.filters) {
+      if (foundMatch) {
+        state.filters[filterKey] = select.value;
+      } else if (state.filters[filterKey]) {
+        state.filters[filterKey] = '';
+        select.value = '';
+      }
+    }
   };
 
-  addOptions('filterRegion', regions);
-  addOptions('filterCategory', categories);
-  addOptions('filterVendor', vendors);
-  addOptions('filterBulan', bulans);
-  addOptions('filterTransferBy', transferBys);
+  rebuildSelect('filterRegion', regions, 'Semua Region', false, 'region');
+  rebuildSelect('filterCategory', categories, 'Semua Kategori', false, 'category');
+  rebuildSelect('filterVendor', vendors, 'Semua Vendor', false, 'vendor');
+  rebuildSelect('filterBulan', bulans, 'Semua Bulan', true, 'bulan');
+  rebuildSelect('filterTransferBy', transferBys, 'Semua Transfer By', false, 'transferBy');
 }
 
 // Apply Filters on Transactions
 function applyFilters() {
-  const f = state.filters;
-  const q = f.search;
+  const f = state.filters || {};
+  const q = (f.search || '').trim().toLowerCase();
 
   const baseTransactions = (state.masterFilteredTransactions && state.masterFilteredTransactions.length)
     ? state.masterFilteredTransactions
-    : (state.masterFilter.preset !== 'all' ? [] : (state.transactions || []));
+    : (state.masterFilter && state.masterFilter.preset !== 'all' ? [] : (state.transactions || []));
+
+  const fAdmin = (f.admin || '').trim().toUpperCase();
+  const fRegion = (f.region || '').trim().toUpperCase();
+  const fCategory = (f.category || '').trim().toUpperCase();
+  const fVendor = (f.vendor || '').trim().toUpperCase();
+  const fBulan = (f.bulan || '').trim();
+  const fTransferBy = (f.transferBy || '').trim().toUpperCase();
 
   state.filteredTransactions = baseTransactions.filter(t => {
-    if (f.region && t.region !== f.region) return false;
-    if (f.category && t.category !== f.category) return false;
-    if (f.vendor && t.vendor !== f.vendor) return false;
-    if (f.bulan && t.bulan !== f.bulan) return false;
-    if (f.transferBy && t.transfer_by !== f.transferBy) return false;
+    if (fAdmin && (t.admin || '').trim().toUpperCase() !== fAdmin) return false;
+    if (fRegion && (t.region || '').trim().toUpperCase() !== fRegion) return false;
+    if (fCategory && (t.category || '').trim().toUpperCase() !== fCategory) return false;
+    if (fVendor && (t.vendor || '').trim().toUpperCase() !== fVendor) return false;
+    if (fBulan && (t.bulan || '').trim() !== fBulan) return false;
+    if (fTransferBy && (t.transfer_by || '').trim().toUpperCase() !== fTransferBy) return false;
 
     if (q) {
-      const matchText = (t.site_id + ' ' + t.site_name + ' ' + t.pic + ' ' + t.sow + ' ' + t.vendor + ' ' + t.program).toLowerCase();
+      const matchText = (
+        (t.site_id || '') + ' ' +
+        (t.site_name || '') + ' ' +
+        (t.pic || '') + ' ' +
+        (t.sow || '') + ' ' +
+        (t.vendor || '') + ' ' +
+        (t.program || '') + ' ' +
+        (t.region || '') + ' ' +
+        (t.category || '') + ' ' +
+        (t.transfer_by || '')
+      ).toLowerCase();
       if (!matchText.includes(q)) return false;
     }
     return true;
@@ -2085,7 +2547,7 @@ function renderTransactionTable() {
 
   if (pageItems.length === 0) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="11" class="text-center" style="padding: 30px; color: var(--text-muted);">Tidak ada data transaksi yang cocok dengan filter.</td>`;
+    tr.innerHTML = `<td colspan="12" class="text-center" style="padding: 30px; color: var(--text-muted);">Tidak ada data transaksi yang cocok dengan filter.</td>`;
     tbody.appendChild(tr);
     return;
   }
@@ -2108,6 +2570,7 @@ function renderTransactionTable() {
       <td>${t.pic || '-'}</td>
       <td class="text-right font-mono font-bold">${t.price || formatRp(t.price_num)}</td>
       <td><span class="badge ${t.transfer_by === 'EBDI' ? 'badge-warning' : 'badge-success'}">${t.transfer_by || '-'}</span></td>
+      <td><span class="badge ${t.admin === 'SARAH' ? 'badge-sarah' : 'badge-nabila'}">${t.admin || 'NABILA'}</span></td>
       <td><span class="badge badge-success">${t.status || 'DONE'}</span></td>
       <td>
         <button class="btn btn-sm btn-secondary btn-view-detail" title="Lihat Detail SOW">
@@ -2142,6 +2605,10 @@ function openTxDetailModal(t) {
       <div class="detail-item">
         <span class="detail-label">Status</span>
         <span class="detail-val"><span class="badge badge-success">${t.status || 'DONE'}</span></span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Admin Data</span>
+        <span class="detail-val"><span class="badge ${t.admin === 'SARAH' ? 'badge-sarah' : 'badge-nabila'}">${t.admin || 'NABILA'}</span></span>
       </div>
       <div class="detail-item">
         <span class="detail-label">PIC Penerima</span>
@@ -2221,13 +2688,14 @@ function exportFilteredTransactionsToCSV() {
     return;
   }
 
-  const headers = ['NO', 'VENDOR', 'PROGRAM', 'DATE REQUEST', 'DATE TRANSFER', 'REGION', 'CATEGORY', 'SITE ID', 'SITE NAME', 'PIC', 'NOMINAL', 'TRANSFER BY', 'STATUS', 'BULAN', 'SOW'];
+  const headers = ['NO', 'ADMIN', 'VENDOR', 'PROGRAM', 'DATE REQUEST', 'DATE TRANSFER', 'REGION', 'CATEGORY', 'SITE ID', 'SITE NAME', 'PIC', 'NOMINAL', 'TRANSFER BY', 'STATUS', 'BULAN', 'SOW'];
   const rows = [headers.join(',')];
 
   state.filteredTransactions.forEach(t => {
     const clean = (str) => `"${(str || '').toString().replace(/"/g, '""').replace(/\n/g, ' ')}"`;
     rows.push([
       clean(t.no),
+      clean(t.admin || 'NABILA'),
       clean(t.vendor),
       clean(t.program),
       clean(t.date_req),
@@ -2245,7 +2713,7 @@ function exportFilteredTransactionsToCSV() {
     ].join(','));
   });
 
-  const filename = `Transfer_EBDI_Filtered_${new Date().toISOString().slice(0, 10)}.csv`;
+  const filename = `Transfer_EBDI_${state.activeAdmin.toUpperCase()}_Filtered_${new Date().toISOString().slice(0, 10)}.csv`;
   const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(rows.join('\n'));
   const link = document.createElement('a');
   link.setAttribute('href', csvContent);
@@ -2260,7 +2728,7 @@ function exportFilteredTransactionsToCSV() {
     subtitle: 'Ekspor Data Transaksi',
     stats: [
       { label: 'Jumlah Baris', value: state.filteredTransactions.length.toLocaleString('id-ID') + ' Baris', highlight: true },
-      { label: 'Nama File', value: filename.slice(0, 18) + '...' }
+      { label: 'Nama File', value: filename.slice(0, 22) + '...' }
     ],
     duration: 4000
   });
