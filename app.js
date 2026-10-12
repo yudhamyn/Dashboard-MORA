@@ -2189,10 +2189,10 @@ function applyMasterFilter() {
   populateCashFlowTable(cfForTable);
 
   // 4. Update Cost Detail Matrix (Tab 3)
-  updateCostDetailMatrixFromFiltered(state.masterFilteredTransactions);
+  updateCostDetailMatrixFromFiltered(state.masterFilteredTransactions, isAll);
 
   // 5. Update Rekapitulasi Price (Tab 4)
-  updatePriceMatricesFromFiltered(state.masterFilteredTransactions, activeMonths);
+  updatePriceMatricesFromFiltered(state.masterFilteredTransactions, activeMonths, isAll);
 
   // 6. Update Charts & Top 5 Categories (Tab 1 & Tab 2)
   renderCharts();
@@ -2205,17 +2205,66 @@ function applyMasterFilter() {
   updateMasterFilterStatusUI(totalKredit, totalCashOut, activeMonths, isAll);
 }
 
-// Master Filter: Dynamically Rebuild Cost Detail Matrix
-function updateCostDetailMatrixFromFiltered(txs) {
-  const regions = ["ADMIN", "BALNUS", "CENTRAL SUMATRA", "CENTRAL SUMATRA INTERNAL", "HQ", "JABO", "JATENG", "SULAWESI", "Grand Total"];
-  const allCategories = [
-    "AKOMODASI", "BBM", "BOP", "COMCASE", "FREELANCE", "INSENTIVE",
-    "KASBON", "KREDIT", "MATERIAL", "RENTAL MOBIL", "SALARY", "TOOLS"
-  ];
+// Helper: Get active dataset regions (dynamically from active summary and transactions)
+function getActiveDatasetRegions(txs) {
+  const cd = state.summary?.cost_detail;
+  const regionsSet = new Set();
+  if (cd && Array.isArray(cd.regions)) {
+    cd.regions.forEach(r => {
+      const reg = (r || '').trim().toUpperCase();
+      if (reg && reg !== 'GRAND TOTAL' && reg !== 'TOTAL KESELURUHAN') regionsSet.add(reg);
+    });
+  }
+  const sourceTxs = txs || state.transactions || [];
+  sourceTxs.forEach(t => {
+    if (t.region) {
+      const reg = t.region.trim().toUpperCase();
+      if (reg && reg !== 'GRAND TOTAL' && reg !== 'TOTAL KESELURUHAN') regionsSet.add(reg);
+    }
+  });
+  const sorted = Array.from(regionsSet).sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }));
+  sorted.push('Grand Total');
+  return sorted;
+}
 
+// Helper: Get active dataset categories (dynamically from active summary and transactions)
+function getActiveDatasetCategories(txs) {
+  const cd = state.summary?.cost_detail;
+  const catSet = new Set();
+  if (cd && Array.isArray(cd.rows)) {
+    cd.rows.forEach(r => {
+      if (r.category) catSet.add(r.category.trim().toUpperCase());
+    });
+  }
+  const sourceTxs = txs || state.transactions || [];
+  sourceTxs.forEach(t => {
+    if (t.category) catSet.add(t.category.trim().toUpperCase());
+  });
+  return Array.from(catSet).sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }));
+}
+
+// Master Filter: Dynamically Rebuild Cost Detail Matrix
+function updateCostDetailMatrixFromFiltered(txs, isAll = false) {
   const thead = document.getElementById('theadCostDetail');
   const tbody = document.getElementById('tbodyCostDetail');
   if (!thead || !tbody) return;
+
+  const cd = state.summary?.cost_detail;
+
+  // When all periods are selected and official pre-aggregated summary exists, use it directly
+  if (isAll && cd && Array.isArray(cd.regions) && cd.regions.length > 0 && Array.isArray(cd.rows) && cd.rows.length > 0) {
+    populateCostDetailMatrix(cd);
+    return;
+  }
+
+  const regions = getActiveDatasetRegions(txs);
+  const allCategories = getActiveDatasetCategories(txs);
+
+  if (!allCategories.length || regions.length <= 1) {
+    thead.innerHTML = `<th>CATEGORY</th><th class="text-right">Grand Total</th>`;
+    tbody.innerHTML = '<tr><td colspan="2" class="text-center" style="padding: 24px; color: var(--text-muted);">Tidak ada data cost detail untuk periode ini.</td></tr>';
+    return;
+  }
 
   thead.innerHTML = `<th>CATEGORY</th>` + regions.map(r => `<th class="text-right">${r}</th>`).join('');
   tbody.innerHTML = '';
@@ -2230,8 +2279,8 @@ function updateCostDetailMatrixFromFiltered(txs) {
   regions.forEach(reg => { colTotals[reg] = 0; });
 
   (txs || []).forEach(t => {
-    const c = t.category;
-    const r = t.region;
+    const c = (t.category || '').trim().toUpperCase();
+    const r = (t.region || '').trim().toUpperCase();
     const p = t.price_num || 0;
     if (matrix[c] && matrix[c][r] !== undefined) {
       matrix[c][r] += p;
@@ -2280,13 +2329,16 @@ function updateCostDetailMatrixFromFiltered(txs) {
 }
 
 // Master Filter: Dynamically Rebuild Price Tables
-function updatePriceMatricesFromFiltered(txs, activeMonths) {
+function updatePriceMatricesFromFiltered(txs, activeMonths, isAll = false) {
   // 1. Price per Region
   const regMap = {};
   (txs || []).forEach(t => {
-    if (t.region) regMap[t.region] = (regMap[t.region] || 0) + (t.price_num || 0);
+    if (t.region) {
+      const reg = t.region.trim().toUpperCase();
+      regMap[reg] = (regMap[reg] || 0) + (t.price_num || 0);
+    }
   });
-  const sortedRegs = Object.keys(regMap).sort();
+  const sortedRegs = Object.keys(regMap).sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }));
   const totalRegPrice = (txs || []).reduce((a, b) => a + (b.price_num || 0), 0);
   const regionItems = sortedRegs.map(r => ({
     region: r,
@@ -2303,7 +2355,10 @@ function updatePriceMatricesFromFiltered(txs, activeMonths) {
   // 2. Price per Bulan
   const bulanMap = {};
   (txs || []).forEach(t => {
-    if (t.bulan) bulanMap[t.bulan] = (bulanMap[t.bulan] || 0) + (t.price_num || 0);
+    if (t.bulan) {
+      const bln = t.bulan.trim();
+      bulanMap[bln] = (bulanMap[bln] || 0) + (t.price_num || 0);
+    }
   });
   const bulanItems = activeMonths.map(b => ({
     bulan: b,
@@ -2317,32 +2372,47 @@ function updatePriceMatricesFromFiltered(txs, activeMonths) {
   });
   populatePriceBulanTable(bulanItems);
 
-  // 3. Price Category x Region Pivot
-  const regions = ["ADMIN", "BALNUS", "CENTRAL SUMATRA", "CENTRAL SUMATRA INTERNAL", "HQ", "JABO", "JATENG", "SULAWESI", "Grand Total"];
-  const allCategories = [
-    "AKOMODASI", "BBM", "BOP", "COMCASE", "FREELANCE", "INSENTIVE",
-    "KASBON", "KREDIT", "MATERIAL", "RENTAL MOBIL", "SALARY", "TOOLS"
-  ];
+  // 3. Price Category x Region Pivot (Dynamic for active dataset)
+  const regions = getActiveDatasetRegions(txs);
+  const allCategories = getActiveDatasetCategories(txs);
+
   const catRows = [];
   const grandTotalValues = {};
   regions.forEach(r => { grandTotalValues[r] = { text: 'Rp 0', num: 0 }; });
 
+  const pcrMatrix = {};
+  allCategories.forEach(cat => {
+    pcrMatrix[cat] = {};
+    regions.forEach(reg => { pcrMatrix[cat][reg] = 0; });
+  });
+
+  (txs || []).forEach(t => {
+    const c = (t.category || '').trim().toUpperCase();
+    const r = (t.region || '').trim().toUpperCase();
+    const p = t.price_num || 0;
+    if (pcrMatrix[c] && pcrMatrix[c][r] !== undefined) {
+      pcrMatrix[c][r] += p;
+      pcrMatrix[c]['Grand Total'] += p;
+      grandTotalValues[r].num += p;
+      grandTotalValues['Grand Total'].num += p;
+    }
+  });
+
   allCategories.forEach(cat => {
     const rowValues = {};
-    let rowSum = 0;
     regions.forEach(reg => {
       if (reg !== 'Grand Total') {
-        const sumVal = (txs || []).filter(t => t.category === cat && t.region === reg).reduce((a, b) => a + (b.price_num || 0), 0);
+        const sumVal = pcrMatrix[cat][reg] || 0;
         rowValues[reg] = { text: sumVal > 0 ? formatRp(sumVal) : '', num: sumVal };
-        rowSum += sumVal;
-        grandTotalValues[reg].num += sumVal;
-        grandTotalValues[reg].text = formatRp(grandTotalValues[reg].num);
       }
     });
+    const rowSum = pcrMatrix[cat]['Grand Total'] || 0;
     rowValues['Grand Total'] = { text: rowSum > 0 ? formatRp(rowSum) : '', num: rowSum };
-    grandTotalValues['Grand Total'].num += rowSum;
-    grandTotalValues['Grand Total'].text = formatRp(grandTotalValues['Grand Total'].num);
     catRows.push({ category: cat, values: rowValues });
+  });
+
+  regions.forEach(reg => {
+    grandTotalValues[reg].text = grandTotalValues[reg].num > 0 ? formatRp(grandTotalValues[reg].num) : '-';
   });
 
   populatePriceCatRegPivot({
