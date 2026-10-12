@@ -60,6 +60,44 @@
     </div>
   </header>
 
+  <!-- Initial State Screen: Shown when user has never refreshed/synced data -->
+  <div id="initialSyncPrompt" class="initial-sync-container">
+    <div class="initial-sync-card">
+      <div class="initial-sync-icon-wrapper">
+        <div class="pulse-ring"></div>
+        <div class="initial-sync-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="initial-sync-title">Data Belum Disinkronkan</h2>
+      <p class="initial-sync-desc">
+        Dashboard memerlukan sinkronisasi data awal langsung dari Google Sheets. Silakan klik tombol di bawah (atau tombol <strong>"Refresh Data"</strong> di kanan atas) untuk memuat seluruh metrik keuangan, cash flow, dan riwayat transaksi terbaru.
+      </p>
+      <button class="btn btn-sync-large" id="btnInitialSyncPrompt">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+        </svg>
+        <span id="btnInitialSyncPromptText">Sinkronkan Data Sekarang</span>
+      </button>
+      <div class="initial-sync-features">
+        <span class="sync-feat-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Live Financial Summary
+        </span>
+        <span class="sync-feat-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          Cash Flow & Matrix
+        </span>
+        <span class="sync-feat-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          24.000+ Transaksi
+        </span>
+      </div>
+    </div>
+  </div>
+
   <!-- Master Date & Month Range Filter Bar -->
   <aside class="master-filter-container" id="masterFilterContainer">
     <div class="master-filter-inner">
@@ -95,7 +133,8 @@
           <button type="button" class="mf-preset-btn" data-preset="q1-2026">Q1 2026</button>
           <button type="button" class="mf-preset-btn" data-preset="q2-2026">Q2 2026</button>
           <button type="button" class="mf-preset-btn" data-preset="q3-2026">Q3 2026</button>
-          <button type="button" class="mf-preset-btn" data-preset="latest">Bulan 9 2026 (Terbaru)</button>
+          <button type="button" class="mf-preset-btn" data-preset="q4-2026">Q4 2026</button>
+          <button type="button" class="mf-preset-btn" data-preset="latest">Bulan 10 2026 (Terbaru)</button>
         </div>
       </div>
 
@@ -104,20 +143,20 @@
         <div class="mf-status-left">
           <span class="mf-status-dot"></span>
           <span class="mf-status-label">Periode Aktif:</span>
-          <strong class="mf-status-value" id="mfStatusRangeText">Semua Periode (Bulan 8 2025 s/d Bulan 9 2026)</strong>
+          <strong class="mf-status-value" id="mfStatusRangeText">Semua Periode (Bulan 8 2025 s/d Bulan 10 2026)</strong>
         </div>
         <div class="mf-status-stats">
           <span class="mf-stat-pill">
             <span class="mf-stat-title">Transaksi:</span>
-            <strong id="mfStatTxCount">23.723</strong>
+            <strong id="mfStatTxCount">24.677</strong>
           </span>
           <span class="mf-stat-pill">
             <span class="mf-stat-title">Cash Out:</span>
-            <strong id="mfStatCashOut" class="text-danger">Rp 27.879.022.619</strong>
+            <strong id="mfStatCashOut" class="text-danger">Rp 29.297.806.584</strong>
           </span>
           <span class="mf-stat-pill">
             <span class="mf-stat-title">Total Kredit:</span>
-            <strong id="mfStatKredit" class="text-primary">Rp 27.888.762.165</strong>
+            <strong id="mfStatKredit" class="text-primary">Rp 29.444.762.165</strong>
           </span>
         </div>
       </div>
@@ -145,7 +184,7 @@
       </button>
       <button class="tab-btn" data-tab="tab-transactions" role="tab" id="tabTransactionsBtn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        <span>Detail Transaksi (23.7K+)</span>
+        <span>Detail Transaksi (24.6K+)</span>
       </button>
     </div>
   </nav>
@@ -164,7 +203,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
             </span>
           </div>
-          <div class="kpi-value" id="kpiTotalKredit">Rp 27,888,762,165</div>
+          <div class="kpi-value" id="kpiTotalKredit">Rp 29,444,762,165</div>
           <div class="kpi-footer">
             <span class="badge badge-success">Dana Masuk</span>
             <span class="kpi-subtext">Sumbagja + Ebdi + Nabila</span>
@@ -179,7 +218,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
             </span>
           </div>
-          <div class="kpi-value" id="kpiCashOut">Rp 27,879,022,619</div>
+          <div class="kpi-value" id="kpiCashOut">Rp 29,297,806,584</div>
           <div class="kpi-footer">
             <span class="badge badge-danger">Realisasi Pengeluaran</span>
             <span class="kpi-subtext">Operasional Proyek</span>
@@ -194,7 +233,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
             </span>
           </div>
-          <div class="kpi-value text-success" id="kpiSisaKredit">Rp 9,739,545</div>
+          <div class="kpi-value text-success" id="kpiSisaKredit">Rp 146,955,580</div>
           <div class="kpi-footer">
             <span class="badge badge-info">Surplus Saldo</span>
             <span class="kpi-subtext">Total Kredit - Cash Out</span>
@@ -215,18 +254,18 @@
                 <span class="bank-dot bca-dot"></span>
                 <strong>BCA</strong>
               </div>
-              <div class="bank-val" id="kpiBca">Rp 3,446,342</div>
+              <div class="bank-val" id="kpiBca">Rp 1,397,412</div>
             </div>
             <div class="bank-row">
               <div class="bank-name">
                 <span class="bank-dot mandiri-dot"></span>
                 <strong>MANDIRI</strong>
               </div>
-              <div class="bank-val" id="kpiMandiri">Rp 6,293,203</div>
+              <div class="bank-val" id="kpiMandiri">-</div>
             </div>
           </div>
           <div class="kpi-footer">
-            <span class="kpi-subtext">Total Bank: <strong id="kpiTotalBank">Rp 9,739,545</strong></span>
+            <span class="kpi-subtext">Total Bank: <strong id="kpiTotalBank">Rp 1,397,412</strong></span>
           </div>
         </div>
 
@@ -235,15 +274,15 @@
           <div class="kpi-header">
             <div class="today-title-group">
               <span class="kpi-label">Today's Cost</span>
-              <span class="today-date-badge" id="todayCostDate">09-Sep-26</span>
+              <span class="today-date-badge" id="todayCostDate">11-Oct-26</span>
             </div>
             <span class="kpi-icon-badge bg-purple">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </span>
           </div>
-          <div class="kpi-value text-purple" id="todayCostAmount">Rp 34,762,068</div>
+          <div class="kpi-value text-purple" id="todayCostAmount">Rp 11,148,517</div>
           <div class="kpi-footer">
-            <span class="badge badge-purple" id="todayCostTxCount">31 Transaksi</span>
+            <span class="badge badge-purple" id="todayCostTxCount">13 Transaksi</span>
             <span class="kpi-subtext">Pencatatan Hari Terakhir</span>
           </div>
         </div>
@@ -256,7 +295,7 @@
           <div class="card-header">
             <div>
               <h2 class="card-title">Tren Cash Flow Bulanan</h2>
-              <p class="card-subtitle">Perbandingan Total Kredit Masuk vs Realisasi Cash Out (Bulan 8 2025 - Bulan 9 2026)</p>
+              <p class="card-subtitle">Perbandingan Total Kredit Masuk vs Realisasi Cash Out (Bulan 8 2025 s/d Sekarang)</p>
             </div>
             <div class="chart-actions">
               <span class="legend-indicator"><span class="color-box bg-kredit"></span> Kredit</span>
@@ -316,7 +355,7 @@
         <div class="card-header">
           <div>
             <h2 class="card-title">Tabel Rekapitulasi Cash Flow Bulanan</h2>
-            <p class="card-subtitle">Data resmi dari sheet <code>Summary EBDI</code> (Bulan 8 2025 s/d Bulan 9 2026)</p>
+            <p class="card-subtitle">Data resmi dari sheet <code>Summary EBDI</code> (Bulan 8 2025 s/d Sekarang)</p>
           </div>
           <button class="btn btn-secondary" onclick="exportTableToCSV('tableCashFlow', 'CashFlow_EBDI.csv')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>

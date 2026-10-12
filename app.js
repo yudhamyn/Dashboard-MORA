@@ -4,33 +4,68 @@
  * Can be opened directly by double-clicking index.html!
  */
 
-// Chronological Months Definition & Helper Maps
-const CHRONO_MONTHS = [
+// Chronological Months Definition & Dynamic Helpers
+const INDO_MONTH_NAMES = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+function parseBulanKey(str) {
+  if (!str) return 0;
+  const m = str.match(/Bulan\s+(\d+)\s+(\d{4})/i);
+  if (!m) return 0;
+  return parseInt(m[2], 10) * 100 + parseInt(m[1], 10);
+}
+
+function getBulanDisplayName(b) {
+  if (!b) return '';
+  const m = b.match(/Bulan\s+(\d+)\s+(\d{4})/i);
+  if (m) {
+    const monthNum = parseInt(m[1], 10);
+    const year = m[2];
+    if (INDO_MONTH_NAMES[monthNum]) {
+      return `${INDO_MONTH_NAMES[monthNum]} ${year}`;
+    }
+  }
+  return b;
+}
+
+const BASELINE_CHRONO_MONTHS = [
   'Bulan 8 2025', 'Bulan 9 2025', 'Bulan 10 2025', 'Bulan 11 2025', 'Bulan 12 2025',
   'Bulan 1 2026', 'Bulan 2 2026', 'Bulan 3 2026', 'Bulan 4 2026', 'Bulan 5 2026',
-  'Bulan 6 2026', 'Bulan 7 2026', 'Bulan 8 2026', 'Bulan 9 2026'
+  'Bulan 6 2026', 'Bulan 7 2026', 'Bulan 8 2026', 'Bulan 9 2026', 'Bulan 10 2026'
 ];
 
-const MONTH_NAMES_MAP = {
-  'Bulan 8 2025': 'Agustus 2025',
-  'Bulan 9 2025': 'September 2025',
-  'Bulan 10 2025': 'Oktober 2025',
-  'Bulan 11 2025': 'November 2025',
-  'Bulan 12 2025': 'Desember 2025',
-  'Bulan 1 2026': 'Januari 2026',
-  'Bulan 2 2026': 'Februari 2026',
-  'Bulan 3 2026': 'Maret 2026',
-  'Bulan 4 2026': 'April 2026',
-  'Bulan 5 2026': 'Mei 2026',
-  'Bulan 6 2026': 'Juni 2026',
-  'Bulan 7 2026': 'Juli 2026',
-  'Bulan 8 2026': 'Agustus 2026',
-  'Bulan 9 2026': 'September 2026'
-};
+let CHRONO_MONTHS = [...BASELINE_CHRONO_MONTHS];
+
+function updateChronoMonths(txs, summary) {
+  const monthSet = new Set(BASELINE_CHRONO_MONTHS);
+  if (txs && Array.isArray(txs)) {
+    txs.forEach(t => {
+      if (t.bulan && t.bulan.trim().startsWith('Bulan ')) {
+        monthSet.add(t.bulan.trim());
+      }
+    });
+  }
+  if (summary && Array.isArray(summary.cash_flow)) {
+    summary.cash_flow.forEach(c => {
+      if (c.bulan && c.bulan.trim().startsWith('Bulan ')) {
+        monthSet.add(c.bulan.trim());
+      }
+    });
+  }
+  CHRONO_MONTHS = Array.from(monthSet).sort((a, b) => parseBulanKey(a) - parseBulanKey(b));
+  return CHRONO_MONTHS;
+}
+
+const MONTH_NAMES_MAP = new Proxy({}, {
+  get(target, prop) {
+    if (typeof prop === 'string') return getBulanDisplayName(prop);
+    return target[prop];
+  }
+});
 
 const MONTH_ABBR_MAP = {
   Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
-  Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12'
+  Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12',
+  Mei: '05', Agu: '08', Okt: '10', Des: '12'
 };
 
 function parseTxDateToISO(dateStr) {
@@ -38,7 +73,8 @@ function parseTxDateToISO(dateStr) {
   const parts = dateStr.trim().split('-');
   if (parts.length !== 3) return null;
   const dd = parts[0].padStart(2, '0');
-  const mm = MONTH_ABBR_MAP[parts[1]] || null;
+  const monthKey = parts[1].charAt(0).toUpperCase() + parts[1].slice(1, 3).toLowerCase();
+  const mm = MONTH_ABBR_MAP[monthKey] || null;
   if (!mm) return null;
   const yyyy = parts[2].length === 2 ? '20' + parts[2] : parts[2];
   return `${yyyy}-${mm}-${dd}`;
@@ -55,15 +91,14 @@ function formatISODateToDisplay(isoStr) {
 
 function getLatestTxDateISO(txs) {
   const list = txs || state.transactions || [];
-  if (!list.length) return '2026-09-09';
+  if (!list.length) return '2026-10-11';
   let latest = '';
-  // Check from the end of the array since transactions are predominantly chronological
-  const checkCount = Math.min(list.length, 300);
-  for (let i = list.length - 1; i >= list.length - checkCount; i--) {
+  // Check backwards through transactions to find true latest ISO date
+  for (let i = list.length - 1; i >= 0; i--) {
     const iso = parseTxDateToISO(list[i].date_trf || list[i].date_req);
     if (iso && iso > latest) latest = iso;
   }
-  return latest || '2026-09-09';
+  return latest || '2026-10-11';
 }
 
 // Application State
@@ -79,9 +114,9 @@ const state = {
   masterFilter: {
     mode: 'bulan', // 'bulan' | 'tanggal'
     startBulan: 'Bulan 8 2025',
-    endBulan: 'Bulan 9 2026',
+    endBulan: 'Bulan 10 2026',
     startDate: '2025-08-01',
-    endDate: '2026-09-09',
+    endDate: '2026-10-11',
     preset: 'all'
   },
   filters: {
@@ -235,6 +270,12 @@ function initEventListeners() {
   document.getElementById('btnSyncData').addEventListener('click', () => {
     syncDataDirectFromGoogleSheets();
   });
+  const btnPrompt = document.getElementById('btnInitialSyncPrompt');
+  if (btnPrompt) {
+    btnPrompt.addEventListener('click', () => {
+      syncDataDirectFromGoogleSheets();
+    });
+  }
   const syncBadge = document.getElementById('syncStatusBadge');
   if (syncBadge) {
     syncBadge.addEventListener('click', () => {
@@ -277,9 +318,38 @@ function updateSyncBadgeUI(refreshTime) {
   }
 }
 
-// Load Dashboard Data (Prefers bundled data.js for instant offline loading)
+// Reveal Dashboard Panels and Hide Initial Sync Prompt
+function revealDashboardAfterSync() {
+  const initialPrompt = document.getElementById('initialSyncPrompt');
+  const masterFilterContainer = document.getElementById('masterFilterContainer');
+  const navTabsContainer = document.querySelector('.nav-tabs-container');
+  const mainContent = document.querySelector('.main-content');
+  if (initialPrompt) initialPrompt.style.display = 'none';
+  if (masterFilterContainer) masterFilterContainer.style.display = '';
+  if (navTabsContainer) navTabsContainer.style.display = '';
+  if (mainContent) mainContent.style.display = '';
+}
+
+// Load Dashboard Data
 function loadDashboardData() {
   updateSyncBadgeUI();
+
+  const savedSync = localStorage.getItem('ebdi_last_refresh');
+  const initialPrompt = document.getElementById('initialSyncPrompt');
+  const masterFilterContainer = document.getElementById('masterFilterContainer');
+  const navTabsContainer = document.querySelector('.nav-tabs-container');
+  const mainContent = document.querySelector('.main-content');
+
+  // If user has NEVER refreshed/synced data before (first visit):
+  if (!savedSync) {
+    if (initialPrompt) initialPrompt.style.display = 'flex';
+    if (masterFilterContainer) masterFilterContainer.style.display = 'none';
+    if (navTabsContainer) navTabsContainer.style.display = 'none';
+    if (mainContent) mainContent.style.display = 'none';
+    return;
+  }
+
+  revealDashboardAfterSync();
 
   // Check if localStorage has newer cached data from a live sync
   try {
@@ -289,14 +359,22 @@ function loadDashboardData() {
     if (cachedSummary && cachedTxs) {
       const parsedSum = JSON.parse(cachedSummary);
       const parsedTxs = JSON.parse(cachedTxs);
-      // Only use localStorage if it has at least as many transactions as the bundled data (23.723+)
+      // Only use localStorage if it has at least as many transactions as the bundled data
       if (parsedSum && parsedTxs && parsedTxs.length >= bundledCount && parsedTxs.length >= 23700) {
         state.summary = parsedSum;
         state.transactions = parsedTxs;
         state.masterFilteredTransactions = parsedTxs;
+        updateChronoMonths(state.transactions, state.summary);
+        const maxDate = getLatestTxDateISO(state.transactions);
+        const latestMonth = CHRONO_MONTHS[CHRONO_MONTHS.length - 1];
+        if (state.masterFilter.preset === 'all') {
+          state.masterFilter.endBulan = latestMonth;
+          state.masterFilter.endDate = maxDate;
+        }
         populateFilterDropdowns(state.transactions);
         populateSummaryUI(state.summary);
         initMasterFilterControls();
+        updateLatestPresetButtonText();
         applyMasterFilter();
         updateSyncBadgeUI();
         return;
@@ -313,6 +391,13 @@ function loadDashboardData() {
     if (window.EBDI_TRANSACTIONS && window.EBDI_TRANSACTIONS.length) {
       state.transactions = window.EBDI_TRANSACTIONS;
       state.masterFilteredTransactions = window.EBDI_TRANSACTIONS;
+      updateChronoMonths(state.transactions, state.summary);
+      const maxDate = getLatestTxDateISO(state.transactions);
+      const latestMonth = CHRONO_MONTHS[CHRONO_MONTHS.length - 1];
+      if (state.masterFilter.preset === 'all') {
+        state.masterFilter.endBulan = latestMonth;
+        state.masterFilter.endDate = maxDate;
+      }
       populateFilterDropdowns(state.transactions);
       try {
         localStorage.setItem('ebdi_cached_summary', JSON.stringify(state.summary));
@@ -322,6 +407,7 @@ function loadDashboardData() {
 
     populateSummaryUI(state.summary);
     initMasterFilterControls();
+    updateLatestPresetButtonText();
     applyMasterFilter();
     updateSyncBadgeUI();
     return;
@@ -334,8 +420,10 @@ function loadDashboardData() {
     .then(res => res.json())
     .then(data => {
       state.summary = data;
+      updateChronoMonths(state.transactions, state.summary);
       populateSummaryUI(state.summary);
       initMasterFilterControls();
+      updateLatestPresetButtonText();
       applyMasterFilter();
       updateSyncBadgeUI();
     })
@@ -772,8 +860,12 @@ async function syncDataDirectFromGoogleSheets() {
     throw new Error(`Gagal mengunduh ${label}: ${lastErr ? lastErr.message : 'Koneksi ditolak'}`);
   }
 
+  const btnPromptText = document.getElementById('btnInitialSyncPromptText');
+  if (btnPromptText) btnPromptText.textContent = 'Menghubungkan ke Google Sheets...';
+
   try {
     badgeText.textContent = 'Mengunduh Summary EBDI...';
+    if (btnPromptText) btnPromptText.textContent = 'Mengunduh Summary EBDI...';
     const summaryCsv = await fetchWithFallback(summaryUrls, 'Summary EBDI');
     const newSummary = parseSummaryCSV(summaryCsv);
     if (newSummary && newSummary.cash_flow && newSummary.cash_flow.length) {
@@ -781,28 +873,43 @@ async function syncDataDirectFromGoogleSheets() {
       populateSummaryUI(state.summary);
     }
 
-    badgeText.textContent = 'Mengunduh Transaksi EBDI (23.6K+)...';
+    badgeText.textContent = 'Mengunduh Transaksi EBDI (24K+)...';
+    if (btnPromptText) btnPromptText.textContent = 'Mengunduh Transaksi EBDI (24K+)...';
     const transferCsv = await fetchWithFallback(transferUrls, 'Transaksi EBDI');
     const newTxs = parseTransferCSV(transferCsv);
     if (newTxs && newTxs.length) {
       state.transactions = newTxs;
       state.masterFilteredTransactions = newTxs;
+      updateChronoMonths(state.transactions, state.summary);
       populateFilterDropdowns(state.transactions);
 
-      // Dynamically update max date of master filter
+      // Dynamically update max date and months of master filter
       const latestISO = getLatestTxDateISO(newTxs);
+      const latestMonth = CHRONO_MONTHS[CHRONO_MONTHS.length - 1];
       const endDateInput = document.getElementById('mfEndDate');
       if (endDateInput) {
         endDateInput.max = latestISO;
-        if (!state.masterFilter.endDate || state.masterFilter.endDate < latestISO || state.masterFilter.preset === 'all' || state.masterFilter.preset === 'latest' || state.masterFilter.preset === '2026' || state.masterFilter.preset === 'q3-2026') {
+        if (!state.masterFilter.endDate || state.masterFilter.endDate < latestISO || state.masterFilter.preset === 'all' || state.masterFilter.preset === 'latest' || state.masterFilter.preset === '2026') {
           state.masterFilter.endDate = latestISO;
           endDateInput.value = latestISO;
         }
       }
+      if (state.masterFilter.preset === 'all' || state.masterFilter.preset === '2026') {
+        state.masterFilter.endBulan = latestMonth;
+      } else if (state.masterFilter.preset === 'latest') {
+        state.masterFilter.startBulan = latestMonth;
+        state.masterFilter.endBulan = latestMonth;
+      }
+      initMasterFilterControls();
+      updateLatestPresetButtonText();
     }
 
     // Re-apply Master Filter
     applyMasterFilter();
+
+    // Reveal full dashboard panels
+    revealDashboardAfterSync();
+    if (btnPromptText) btnPromptText.textContent = 'Sinkronkan Data Sekarang';
 
     // Record last refresh timestamp
     const now = new Date();
@@ -854,6 +961,24 @@ async function syncDataDirectFromGoogleSheets() {
     }
     updateSyncBadgeUI();
     const savedTime = localStorage.getItem('ebdi_last_refresh') || 'Data Bundled Lokal';
+
+    // Fallback for file:// or offline mode to ensure dashboard is unlocked
+    if (!state.summary && window.EBDI_SUMMARY) {
+      state.summary = window.EBDI_SUMMARY;
+      state.transactions = window.EBDI_TRANSACTIONS || [];
+      state.masterFilteredTransactions = state.transactions;
+      updateChronoMonths(state.transactions, state.summary);
+      populateFilterDropdowns(state.transactions);
+      populateSummaryUI(state.summary);
+      initMasterFilterControls();
+      applyMasterFilter();
+      const now = new Date();
+      const timeStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+      localStorage.setItem('ebdi_last_refresh', timeStr);
+      updateSyncBadgeUI(timeStr);
+    }
+    revealDashboardAfterSync();
+    if (btnPromptText) btnPromptText.textContent = 'Sinkronkan Data Sekarang';
 
     const isFileProtocol = !window.location.protocol.startsWith('http');
     showToastNotification({
@@ -1361,6 +1486,14 @@ function renderCharts() {
 }
 
 // Master Filter: Initialize Controls
+function updateLatestPresetButtonText() {
+  const btnLatest = document.querySelector('.mf-preset-btn[data-preset="latest"]');
+  if (btnLatest && CHRONO_MONTHS.length) {
+    const latestMonth = CHRONO_MONTHS[CHRONO_MONTHS.length - 1];
+    btnLatest.textContent = `${latestMonth} (Terbaru)`;
+  }
+}
+
 function initMasterFilterControls() {
   const startSelect = document.getElementById('mfStartBulan');
   const endSelect = document.getElementById('mfEndBulan');
@@ -1401,6 +1534,7 @@ function initMasterFilterControls() {
     }
     endDateInput.value = state.masterFilter.endDate;
   }
+  updateLatestPresetButtonText();
 }
 
 // Master Filter: Event Listeners
@@ -1463,10 +1597,11 @@ function applyMasterFilterPreset(presetKey) {
   state.masterFilter.preset = presetKey;
 
   const maxDate = getLatestTxDateISO(state.transactions);
+  const latestMonth = CHRONO_MONTHS[CHRONO_MONTHS.length - 1] || 'Bulan 10 2026';
   const mf = state.masterFilter;
   if (presetKey === 'all') {
-    mf.startBulan = 'Bulan 8 2025';
-    mf.endBulan = 'Bulan 9 2026';
+    mf.startBulan = CHRONO_MONTHS[0] || 'Bulan 8 2025';
+    mf.endBulan = latestMonth;
     mf.startDate = '2025-08-01';
     mf.endDate = maxDate;
   } else if (presetKey === '2025') {
@@ -1476,7 +1611,7 @@ function applyMasterFilterPreset(presetKey) {
     mf.endDate = '2025-12-31';
   } else if (presetKey === '2026') {
     mf.startBulan = 'Bulan 1 2026';
-    mf.endBulan = 'Bulan 9 2026';
+    mf.endBulan = latestMonth;
     mf.startDate = '2026-01-01';
     mf.endDate = maxDate;
   } else if (presetKey === 'q1-2026') {
@@ -1493,11 +1628,19 @@ function applyMasterFilterPreset(presetKey) {
     mf.startBulan = 'Bulan 7 2026';
     mf.endBulan = 'Bulan 9 2026';
     mf.startDate = '2026-07-01';
+    mf.endDate = '2026-09-30';
+  } else if (presetKey === 'q4-2026') {
+    mf.startBulan = 'Bulan 10 2026';
+    mf.endBulan = 'Bulan 12 2026';
+    mf.startDate = '2026-10-01';
     mf.endDate = maxDate;
   } else if (presetKey === 'latest') {
-    mf.startBulan = 'Bulan 9 2026';
-    mf.endBulan = 'Bulan 9 2026';
-    mf.startDate = '2026-09-01';
+    mf.startBulan = latestMonth;
+    mf.endBulan = latestMonth;
+    const mMatch = latestMonth.match(/Bulan\s+(\d+)\s+(\d{4})/i);
+    const mNum = mMatch ? mMatch[1].padStart(2, '0') : '10';
+    const yNum = mMatch ? mMatch[2] : '2026';
+    mf.startDate = `${yNum}-${mNum}-01`;
     mf.endDate = maxDate;
   }
 
@@ -1826,7 +1969,9 @@ function updateMasterFilterStatusUI(totalKredit, totalCashOut, activeMonths, isA
 
   if (statusRangeText) {
     if (isAll) {
-      statusRangeText.textContent = 'Semua Periode (Bulan 8 2025 s/d Bulan 9 2026 • 14 Bulan)';
+      const firstM = CHRONO_MONTHS[0] || 'Bulan 8 2025';
+      const lastM = CHRONO_MONTHS[CHRONO_MONTHS.length - 1] || 'Bulan 10 2026';
+      statusRangeText.textContent = `Semua Periode (${firstM} s/d ${lastM} • ${CHRONO_MONTHS.length} Bulan)`;
     } else if (mf.mode === 'bulan') {
       const sName = MONTH_NAMES_MAP[mf.startBulan] || mf.startBulan;
       const eName = MONTH_NAMES_MAP[mf.endBulan] || mf.endBulan;
