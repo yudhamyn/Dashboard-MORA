@@ -131,13 +131,17 @@ const state = {
   currentPage: 1,
   pageSize: 25,
   charts: {},
+  costDetailView: 'cat-region', // 'cat-region' | 'cat-bulan'
   masterFilter: {
     mode: 'bulan', // 'bulan' | 'tanggal'
     startBulan: 'Bulan 8 2025',
     endBulan: 'Bulan 10 2026',
     startDate: '2025-08-01',
     endDate: '2026-10-11',
-    preset: 'all'
+    preset: 'all',
+    selectedMonths: [],
+    selectedRegions: [],
+    selectedCategories: []
   },
   filters: {
     search: '',
@@ -460,6 +464,7 @@ function switchAdminView(adminKey, savePref = true) {
   // Populate UI
   populateSummaryUI(state.summary);
   populateFilterDropdowns(state.transactions);
+  populateMultiSelectDropdowns();
   initMasterFilterControls();
   updatePresetButtonsVisibility();
   updateLatestPresetButtonText();
@@ -1955,6 +1960,15 @@ function initMasterFilterEventListeners() {
     const onMonthChange = () => {
       state.masterFilter.startBulan = startSelect.value;
       state.masterFilter.endBulan = endSelect.value;
+      let startIdx = CHRONO_MONTHS.indexOf(startSelect.value);
+      let endIdx = CHRONO_MONTHS.indexOf(endSelect.value);
+      if (startIdx === -1) startIdx = 0;
+      if (endIdx === -1) endIdx = CHRONO_MONTHS.length - 1;
+      if (startIdx > endIdx) {
+        const temp = startIdx; startIdx = endIdx; endIdx = temp;
+      }
+      state.masterFilter.selectedMonths = CHRONO_MONTHS.slice(startIdx, endIdx + 1);
+      syncBulanCheckboxesFromState();
       clearActiveMasterPresets();
       applyMasterFilter();
     };
@@ -1980,9 +1994,13 @@ function initMasterFilterEventListeners() {
   const btnReset = document.getElementById('btnResetMasterFilter');
   if (btnReset) {
     btnReset.addEventListener('click', () => {
-      applyMasterFilterPreset('all');
+      resetAllMasterAndMultiSelectFilters();
     });
   }
+
+  // Multi-Select Dropdowns & Tab 3 Matrix controls
+  initMultiSelectDropdowns();
+  initMatrixViewToggleControls();
 }
 
 function clearActiveMasterPresets() {
@@ -2006,27 +2024,16 @@ function applyMasterFilterPreset(presetKey) {
     mf.endBulan = latestMonth;
     mf.startDate = minDate;
     mf.endDate = maxDate;
-  } else if (presetKey === '2023') {
-    mf.startBulan = CHRONO_MONTHS.find(m => m.endsWith('2023')) || 'Bulan 4 2023';
-    mf.endBulan = [...CHRONO_MONTHS].reverse().find(m => m.endsWith('2023')) || 'Bulan 12 2023';
-    mf.startDate = '2023-01-01';
-    mf.endDate = '2023-12-31';
-  } else if (presetKey === '2024') {
-    mf.startBulan = CHRONO_MONTHS.find(m => m.endsWith('2024')) || 'Bulan 1 2024';
-    mf.endBulan = [...CHRONO_MONTHS].reverse().find(m => m.endsWith('2024')) || 'Bulan 12 2024';
-    mf.startDate = '2024-01-01';
-    mf.endDate = '2024-12-31';
-  } else if (presetKey === '2025') {
-    mf.startBulan = CHRONO_MONTHS.find(m => m.endsWith('2025')) || 'Bulan 1 2025';
-    mf.endBulan = [...CHRONO_MONTHS].reverse().find(m => m.endsWith('2025')) || 'Bulan 12 2025';
-    mf.startDate = '2025-01-01';
-    mf.endDate = '2025-12-31';
-  } else if (presetKey === '2026') {
-    mf.startBulan = CHRONO_MONTHS.find(m => m.endsWith('2026')) || 'Bulan 1 2026';
-    mf.endBulan = latestMonth;
-    mf.startDate = '2026-01-01';
-    mf.endDate = maxDate;
+    mf.selectedMonths = [...CHRONO_MONTHS];
+  } else if (presetKey === '2023' || presetKey === '2024' || presetKey === '2025' || presetKey === '2026') {
+    const yr = presetKey;
+    mf.selectedMonths = CHRONO_MONTHS.filter(m => m.endsWith(yr));
+    mf.startBulan = mf.selectedMonths[0] || CHRONO_MONTHS[0];
+    mf.endBulan = mf.selectedMonths[mf.selectedMonths.length - 1] || latestMonth;
+    mf.startDate = `${yr}-01-01`;
+    mf.endDate = `${yr}-12-31`;
   } else if (presetKey === 'latest') {
+    mf.selectedMonths = [latestMonth];
     mf.startBulan = latestMonth;
     mf.endBulan = latestMonth;
     const mMatch = latestMonth.match(/Bulan\s+(\d+)\s+(\d{4})/i);
@@ -2052,7 +2059,353 @@ function applyMasterFilterPreset(presetKey) {
     endDateInput.value = mf.endDate;
   }
 
+  syncBulanCheckboxesFromState();
   applyMasterFilter();
+}
+
+// ==========================================================================
+// Multi-Select Dropdowns (Global Master Filter: Bulan, Region, Kategori)
+// ==========================================================================
+
+function initMultiSelectDropdowns() {
+  const dropdownTypes = ['Bulan', 'Region', 'Category'];
+
+  // Toggle dropdown menu open/close on trigger button click
+  dropdownTypes.forEach(type => {
+    const btn = document.getElementById(`btnMs${type}`);
+    const dd = document.getElementById(`msDropdown${type}`);
+    if (btn && dd) {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = dd.classList.contains('open');
+        document.querySelectorAll('.ms-dropdown').forEach(d => {
+          if (d !== dd) d.classList.remove('open');
+        });
+        dd.classList.toggle('open', !isOpen);
+        btn.setAttribute('aria-expanded', !isOpen);
+        if (!isOpen) {
+          const searchInput = dd.querySelector('.ms-search-input');
+          if (searchInput) {
+            searchInput.focus();
+            searchInput.value = '';
+            filterMultiSelectOptionsBySearch(type.toLowerCase(), '');
+          }
+        }
+      });
+    }
+
+    const menu = document.getElementById(`menuMs${type}`);
+    if (menu) {
+      menu.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+    }
+
+    const searchInput = document.getElementById(`searchMs${type}`);
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        filterMultiSelectOptionsBySearch(type.toLowerCase(), e.target.value);
+      });
+    }
+
+    const btnSelectAll = document.getElementById(`btnSelectAll${type}`);
+    if (btnSelectAll) {
+      btnSelectAll.addEventListener('click', () => {
+        selectAllMultiSelectOptions(type.toLowerCase());
+      });
+    }
+
+    const btnClear = document.getElementById(`btnClear${type}`);
+    if (btnClear) {
+      btnClear.addEventListener('click', () => {
+        clearMultiSelectOptions(type.toLowerCase());
+      });
+    }
+  });
+
+  // Global click outside to close dropdowns
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.ms-dropdown.open').forEach(dd => {
+      dd.classList.remove('open');
+      const btn = dd.querySelector('.ms-trigger');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  // Escape key to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.ms-dropdown.open').forEach(dd => {
+        dd.classList.remove('open');
+        const btn = dd.querySelector('.ms-trigger');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      });
+    }
+  });
+
+  // Global Reset Multi-Select Filters Button
+  const btnResetGlobal = document.getElementById('btnResetMultiSelectFilters');
+  if (btnResetGlobal) {
+    btnResetGlobal.addEventListener('click', () => {
+      resetAllMasterAndMultiSelectFilters();
+    });
+  }
+}
+
+// Populate / Rebuild Multi-Select Dropdown Lists
+function populateMultiSelectDropdowns() {
+  const allMonths = [...CHRONO_MONTHS];
+  const allRegs = getActiveDatasetRegions(state.transactions).filter(r => r !== 'Grand Total');
+  const allCats = getActiveDatasetCategories(state.transactions);
+
+  state.masterFilter.selectedMonths = [...allMonths];
+  state.masterFilter.selectedRegions = [...allRegs];
+  state.masterFilter.selectedCategories = [...allCats];
+
+  renderMultiSelectList('bulan', allMonths, state.masterFilter.selectedMonths);
+  renderMultiSelectList('region', allRegs, state.masterFilter.selectedRegions);
+  renderMultiSelectList('category', allCats, state.masterFilter.selectedCategories);
+
+  updateMultiSelectTriggerUI('bulan');
+  updateMultiSelectTriggerUI('region');
+  updateMultiSelectTriggerUI('category');
+}
+
+function renderMultiSelectList(type, allItems, selectedItems) {
+  const listId = type === 'bulan' ? 'listMsBulan' : type === 'region' ? 'listMsRegion' : 'listMsCategory';
+  const listEl = document.getElementById(listId);
+  if (!listEl) return;
+
+  const selSet = new Set(selectedItems);
+  listEl.innerHTML = '';
+
+  allItems.forEach(item => {
+    const isChecked = selSet.has(item);
+    const label = document.createElement('label');
+    label.className = `ms-option ${isChecked ? 'selected' : ''}`;
+    label.dataset.value = item;
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = item;
+    checkbox.checked = isChecked;
+
+    const span = document.createElement('span');
+    span.className = 'ms-option-text';
+    if (type === 'bulan' && MONTH_NAMES_MAP[item]) {
+      span.textContent = `${item} (${MONTH_NAMES_MAP[item]})`;
+    } else {
+      span.textContent = item;
+    }
+
+    checkbox.addEventListener('change', () => {
+      label.classList.toggle('selected', checkbox.checked);
+      onMultiSelectOptionChanged(type);
+    });
+
+    label.appendChild(checkbox);
+    label.appendChild(span);
+    listEl.appendChild(label);
+  });
+}
+
+function onMultiSelectOptionChanged(type) {
+  const listId = type === 'bulan' ? 'listMsBulan' : type === 'region' ? 'listMsRegion' : 'listMsCategory';
+  const listEl = document.getElementById(listId);
+  if (!listEl) return;
+
+  const checkedInputs = listEl.querySelectorAll('input[type="checkbox"]:checked');
+  const checkedVals = Array.from(checkedInputs).map(cb => cb.value);
+
+  if (type === 'bulan') {
+    state.masterFilter.selectedMonths = checkedVals;
+    clearActiveMasterPresets();
+  } else if (type === 'region') {
+    state.masterFilter.selectedRegions = checkedVals;
+  } else if (type === 'category') {
+    state.masterFilter.selectedCategories = checkedVals;
+  }
+
+  updateMultiSelectTriggerUI(type);
+  applyMasterFilter();
+}
+
+function selectAllMultiSelectOptions(type) {
+  const listId = type === 'bulan' ? 'listMsBulan' : type === 'region' ? 'listMsRegion' : 'listMsCategory';
+  const listEl = document.getElementById(listId);
+  if (!listEl) return;
+
+  const checkboxes = listEl.querySelectorAll('input[type="checkbox"]');
+  const allVals = [];
+  checkboxes.forEach(cb => {
+    cb.checked = true;
+    cb.closest('.ms-option')?.classList.add('selected');
+    allVals.push(cb.value);
+  });
+
+  if (type === 'bulan') {
+    state.masterFilter.selectedMonths = allVals;
+  } else if (type === 'region') {
+    state.masterFilter.selectedRegions = allVals;
+  } else if (type === 'category') {
+    state.masterFilter.selectedCategories = allVals;
+  }
+
+  updateMultiSelectTriggerUI(type);
+  applyMasterFilter();
+}
+
+function clearMultiSelectOptions(type) {
+  const listId = type === 'bulan' ? 'listMsBulan' : type === 'region' ? 'listMsRegion' : 'listMsCategory';
+  const listEl = document.getElementById(listId);
+  if (!listEl) return;
+
+  const checkboxes = listEl.querySelectorAll('input[type="checkbox"]');
+  checkboxes.forEach(cb => {
+    cb.checked = false;
+    cb.closest('.ms-option')?.classList.remove('selected');
+  });
+
+  if (type === 'bulan') {
+    state.masterFilter.selectedMonths = [];
+    clearActiveMasterPresets();
+  } else if (type === 'region') {
+    state.masterFilter.selectedRegions = [];
+  } else if (type === 'category') {
+    state.masterFilter.selectedCategories = [];
+  }
+
+  updateMultiSelectTriggerUI(type);
+  applyMasterFilter();
+}
+
+function filterMultiSelectOptionsBySearch(type, searchText) {
+  const listId = type === 'bulan' ? 'listMsBulan' : type === 'region' ? 'listMsRegion' : 'listMsCategory';
+  const listEl = document.getElementById(listId);
+  if (!listEl) return;
+
+  const query = (searchText || '').toLowerCase().trim();
+  const options = listEl.querySelectorAll('.ms-option');
+  options.forEach(opt => {
+    const text = opt.textContent.toLowerCase();
+    opt.style.display = text.includes(query) ? '' : 'none';
+  });
+}
+
+function updateMultiSelectTriggerUI(type) {
+  let lblEl, badgeEl, selectedList, totalAvailable, defaultLabel;
+
+  if (type === 'bulan') {
+    lblEl = document.getElementById('lblMsBulan');
+    badgeEl = document.getElementById('badgeMsBulan');
+    selectedList = state.masterFilter.selectedMonths || [];
+    totalAvailable = CHRONO_MONTHS.length;
+    defaultLabel = 'Semua Bulan';
+  } else if (type === 'region') {
+    lblEl = document.getElementById('lblMsRegion');
+    badgeEl = document.getElementById('badgeMsRegion');
+    selectedList = state.masterFilter.selectedRegions || [];
+    totalAvailable = getActiveDatasetRegions(state.transactions).filter(r => r !== 'Grand Total').length;
+    defaultLabel = 'Semua Region';
+  } else if (type === 'category') {
+    lblEl = document.getElementById('lblMsCategory');
+    badgeEl = document.getElementById('badgeMsCategory');
+    selectedList = state.masterFilter.selectedCategories || [];
+    totalAvailable = getActiveDatasetCategories(state.transactions).length;
+    defaultLabel = 'Semua Kategori';
+  }
+
+  if (!lblEl || !badgeEl) return;
+
+  const count = selectedList.length;
+
+  if (count === 0) {
+    lblEl.textContent = `0 ${type === 'bulan' ? 'Bulan' : type === 'region' ? 'Region' : 'Kategori'} Terpilih`;
+    badgeEl.textContent = '0';
+    badgeEl.style.display = 'inline-flex';
+  } else if (count >= totalAvailable) {
+    lblEl.textContent = defaultLabel;
+    badgeEl.style.display = 'none';
+  } else if (count === 1) {
+    lblEl.textContent = selectedList[0];
+    badgeEl.textContent = '1';
+    badgeEl.style.display = 'inline-flex';
+  } else {
+    lblEl.textContent = `${count} ${type === 'bulan' ? 'Bulan' : type === 'region' ? 'Region' : 'Kategori'} Terpilih`;
+    badgeEl.textContent = String(count);
+    badgeEl.style.display = 'inline-flex';
+  }
+}
+
+function syncBulanCheckboxesFromState() {
+  const listEl = document.getElementById('listMsBulan');
+  if (!listEl) return;
+
+  const selSet = new Set(state.masterFilter.selectedMonths || []);
+  const checkboxes = listEl.querySelectorAll('input[type="checkbox"]');
+  checkboxes.forEach(cb => {
+    const isChecked = selSet.has(cb.value);
+    cb.checked = isChecked;
+    cb.closest('.ms-option')?.classList.toggle('selected', isChecked);
+  });
+
+  updateMultiSelectTriggerUI('bulan');
+}
+
+function resetAllMasterAndMultiSelectFilters() {
+  applyMasterFilterPreset('all');
+  selectAllMultiSelectOptions('region');
+  selectAllMultiSelectOptions('category');
+}
+
+// ==========================================================================
+// Tab 3 Matrix View Toggle Controls (Category x Region vs Category x Bulan)
+// ==========================================================================
+
+function initMatrixViewToggleControls() {
+  const btnToggleRegion = document.getElementById('btnToggleCatRegion');
+  const btnToggleBulan = document.getElementById('btnToggleCatBulan');
+  if (btnToggleRegion && btnToggleBulan) {
+    btnToggleRegion.addEventListener('click', () => setCostDetailView('cat-region'));
+    btnToggleBulan.addEventListener('click', () => setCostDetailView('cat-bulan'));
+  }
+
+  const btnExportCd = document.getElementById('btnExportCostDetailDynamic');
+  if (btnExportCd) {
+    btnExportCd.addEventListener('click', () => {
+      exportCostDetailDynamic();
+    });
+  }
+}
+
+function setCostDetailView(view) {
+  state.costDetailView = view;
+  const btnRegion = document.getElementById('btnToggleCatRegion');
+  const btnBulan = document.getElementById('btnToggleCatBulan');
+  const title = document.getElementById('costDetailTitle');
+  const subtitle = document.getElementById('costDetailSubtitle');
+
+  if (btnRegion) btnRegion.classList.toggle('active', view === 'cat-region');
+  if (btnBulan) btnBulan.classList.toggle('active', view === 'cat-bulan');
+
+  if (title) {
+    title.textContent = (view === 'cat-bulan')
+      ? 'Matrix Cost Detail (Category × Bulan)'
+      : 'Matrix Cost Detail (Category × Region)';
+  }
+  if (subtitle) {
+    subtitle.textContent = (view === 'cat-bulan')
+      ? 'Tabel silang alokasi pengeluaran per kategori kegiatan terhadap setiap bulan (Cost per Bulan)'
+      : 'Tabel silang alokasi pengeluaran per kategori kegiatan terhadap seluruh region';
+  }
+
+  updateCostDetailMatrixFromFiltered(state.masterFilteredTransactions, false);
+}
+
+function exportCostDetailDynamic() {
+  const isMonth = (state.costDetailView === 'cat-bulan');
+  const filename = isMonth ? 'CostDetail_Category_Bulan.csv' : 'CostDetail_Category_Region.csv';
+  exportTableToCSV('tableCostDetail', filename);
 }
 
 // Master Filter: Core Application Function
@@ -2060,58 +2413,61 @@ function applyMasterFilter() {
   const mf = state.masterFilter;
   const minDate = getEarliestTxDateISO(state.transactions);
   const maxDate = getLatestTxDateISO(state.transactions);
-  let activeMonths = [];
-  let isAll = false;
 
-  if (mf.mode === 'bulan') {
-    let startIdx = CHRONO_MONTHS.indexOf(mf.startBulan);
-    let endIdx = CHRONO_MONTHS.indexOf(mf.endBulan);
-    if (startIdx === -1) startIdx = 0;
-    if (endIdx === -1) endIdx = CHRONO_MONTHS.length - 1;
-    if (startIdx > endIdx) {
-      const temp = startIdx; startIdx = endIdx; endIdx = temp;
-      mf.startBulan = CHRONO_MONTHS[startIdx];
-      mf.endBulan = CHRONO_MONTHS[endIdx];
-      const startSelect = document.getElementById('mfStartBulan');
-      const endSelect = document.getElementById('mfEndBulan');
-      if (startSelect) startSelect.value = mf.startBulan;
-      if (endSelect) endSelect.value = mf.endBulan;
-    }
-    activeMonths = CHRONO_MONTHS.slice(startIdx, endIdx + 1);
-    const monthsSet = new Set(activeMonths);
-    isAll = (activeMonths.length === CHRONO_MONTHS.length);
+  const allMonths = CHRONO_MONTHS;
+  const allRegs = getActiveDatasetRegions(state.transactions).filter(r => r !== 'Grand Total');
+  const allCats = getActiveDatasetCategories(state.transactions);
 
-    state.masterFilteredTransactions = (state.transactions || []).filter(t => monthsSet.has(t.bulan));
-  } else {
-    // Tanggal Mode
-    let start = mf.startDate || minDate;
-    let end = mf.endDate || maxDate;
-    if (start > end) {
-      const temp = start; start = end; end = temp;
-      mf.startDate = start;
-      mf.endDate = end;
-      const startDateInput = document.getElementById('mfStartDate');
-      const endDateInput = document.getElementById('mfEndDate');
-      if (startDateInput) startDateInput.value = start;
-      if (endDateInput) endDateInput.value = end;
-    }
-    isAll = (start <= minDate && end >= maxDate);
+  if (!Array.isArray(mf.selectedMonths)) mf.selectedMonths = [...allMonths];
+  if (!Array.isArray(mf.selectedRegions)) mf.selectedRegions = [...allRegs];
+  if (!Array.isArray(mf.selectedCategories)) mf.selectedCategories = [...allCats];
 
-    state.masterFilteredTransactions = (state.transactions || []).filter(t => {
-      const iso = parseTxDateToISO(t.date_trf || t.date_req);
-      if (!iso) return false;
-      return iso >= start && iso <= end;
-    });
+  const selMonthsSet = new Set(mf.selectedMonths);
+  const selRegionsSet = new Set(mf.selectedRegions.map(r => r.toUpperCase()));
+  const selCatsSet = new Set(mf.selectedCategories.map(c => c.toUpperCase()));
 
-    const activeSet = new Set(state.masterFilteredTransactions.map(t => t.bulan));
-    activeMonths = CHRONO_MONTHS.filter(m => activeSet.has(m));
-  }
+  const isMonthFiltered = (mf.selectedMonths.length < allMonths.length);
+  const isRegionFiltered = (mf.selectedRegions.length < allRegs.length);
+  const isCatFiltered = (mf.selectedCategories.length < allCats.length);
+
+  const activeMonths = CHRONO_MONTHS.filter(m => selMonthsSet.has(m));
+  const isAll = !isMonthFiltered && !isRegionFiltered && !isCatFiltered;
+
+  // Filter Transactions by selected month, region, and category
+  state.masterFilteredTransactions = (state.transactions || []).filter(t => {
+    if (isMonthFiltered && !selMonthsSet.has(t.bulan)) return false;
+    const reg = (t.region || '').trim().toUpperCase();
+    if (isRegionFiltered && !selRegionsSet.has(reg)) return false;
+    const cat = (t.category || '').trim().toUpperCase();
+    if (isCatFiltered && !selCatsSet.has(cat)) return false;
+    return true;
+  });
 
   // 1. Calculate Cash Flow for active months
   const allCf = state.summary?.cash_flow || [];
   const activeMonthsSet = new Set(activeMonths);
   const filteredCf = allCf.filter(item => activeMonthsSet.has(item.bulan));
   state.activeFilteredCf = filteredCf;
+
+  // Compute month cash out map from filtered transactions
+  const monthCashOutMap = {};
+  state.masterFilteredTransactions.forEach(t => {
+    if (t.bulan) {
+      monthCashOutMap[t.bulan] = (monthCashOutMap[t.bulan] || 0) + (t.price_num || 0);
+    }
+  });
+
+  const adaptedCf = filteredCf.map(item => {
+    if (isRegionFiltered || isCatFiltered) {
+      const coNum = monthCashOutMap[item.bulan] || 0;
+      return {
+        ...item,
+        cash_out: formatRp(coNum),
+        cash_out_num: coNum
+      };
+    }
+    return item;
+  });
 
   // Compute Grand Total row for Cash Flow
   const sumSumbagja = filteredCf.reduce((a, b) => a + (b.kredit_sumbagja_num || 0), 0);
@@ -2122,7 +2478,7 @@ function applyMasterFilter() {
   const sisaKredit = totalKredit - totalCashOut;
 
   const cfForTable = [
-    ...filteredCf,
+    ...adaptedCf,
     {
       bulan: 'Grand Total',
       kredit_sumbagja: formatRp(sumSumbagja),
@@ -2249,20 +2605,39 @@ function updateCostDetailMatrixFromFiltered(txs, isAll = false) {
   const tbody = document.getElementById('tbodyCostDetail');
   if (!thead || !tbody) return;
 
-  const cd = state.summary?.cost_detail;
+  const isCatBulanView = (state.costDetailView === 'cat-bulan');
 
-  // When all periods are selected and official pre-aggregated summary exists, use it directly
+  if (isCatBulanView) {
+    renderCostDetailCatBulanMatrix(txs, thead, tbody);
+  } else {
+    renderCostDetailCatRegionMatrix(txs, thead, tbody, isAll);
+  }
+}
+
+function renderCostDetailCatRegionMatrix(txs, thead, tbody, isAll = false) {
+  const cd = state.summary?.cost_detail;
+  const mf = state.masterFilter;
+
+  // When all periods/filters are selected and pre-aggregated cd exists, use it directly
   if (isAll && cd && Array.isArray(cd.regions) && cd.regions.length > 0 && Array.isArray(cd.rows) && cd.rows.length > 0) {
     populateCostDetailMatrix(cd);
     return;
   }
 
-  const regions = getActiveDatasetRegions(txs);
-  const allCategories = getActiveDatasetCategories(txs);
+  const allAvailableRegs = getActiveDatasetRegions(txs).filter(r => r !== 'Grand Total');
+  const regions = (mf.selectedRegions && mf.selectedRegions.length > 0 && mf.selectedRegions.length < allAvailableRegs.length)
+    ? [...mf.selectedRegions].sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }))
+    : [...allAvailableRegs];
+  regions.push('Grand Total');
+
+  const allAvailableCats = getActiveDatasetCategories(txs);
+  const allCategories = (mf.selectedCategories && mf.selectedCategories.length > 0 && mf.selectedCategories.length < allAvailableCats.length)
+    ? [...mf.selectedCategories].sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }))
+    : [...allAvailableCats];
 
   if (!allCategories.length || regions.length <= 1) {
     thead.innerHTML = `<th>CATEGORY</th><th class="text-right">Grand Total</th>`;
-    tbody.innerHTML = '<tr><td colspan="2" class="text-center" style="padding: 24px; color: var(--text-muted);">Tidak ada data cost detail untuk periode ini.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="2" class="text-center" style="padding: 24px; color: var(--text-muted);">Tidak ada data cost detail untuk filter yang dipilih.</td></tr>';
     return;
   }
 
@@ -2324,6 +2699,94 @@ function updateCostDetailMatrixFromFiltered(txs, isAll = false) {
     const num = colTotals[reg] || 0;
     totalCells += `<td class="text-right font-mono font-bold text-danger">${num > 0 ? formatRp(num) : '-'}</td>`;
   });
+  trTotal.innerHTML = totalCells;
+  tbody.appendChild(trTotal);
+}
+
+function renderCostDetailCatBulanMatrix(txs, thead, tbody) {
+  const mf = state.masterFilter;
+  const activeMonthsList = (mf.selectedMonths && mf.selectedMonths.length > 0)
+    ? CHRONO_MONTHS.filter(m => mf.selectedMonths.includes(m))
+    : [...CHRONO_MONTHS];
+
+  const allAvailableCats = getActiveDatasetCategories(txs);
+  const allCategories = (mf.selectedCategories && mf.selectedCategories.length > 0 && mf.selectedCategories.length < allAvailableCats.length)
+    ? [...mf.selectedCategories].sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }))
+    : [...allAvailableCats];
+
+  if (!allCategories.length || !activeMonthsList.length) {
+    thead.innerHTML = `<th>CATEGORY</th><th class="text-right">Grand Total</th>`;
+    tbody.innerHTML = '<tr><td colspan="2" class="text-center" style="padding: 24px; color: var(--text-muted);">Tidak ada data cost detail untuk filter yang dipilih.</td></tr>';
+    return;
+  }
+
+  // Header: CATEGORY + each Month + Grand Total
+  thead.innerHTML = `<th>CATEGORY</th>` +
+    activeMonthsList.map(m => {
+      const sub = MONTH_NAMES_MAP[m] ? `<span class="col-subtext" style="display:block;font-size:0.7rem;color:var(--text-muted);font-weight:normal;">${MONTH_NAMES_MAP[m]}</span>` : '';
+      return `<th class="text-right">${m}${sub}</th>`;
+    }).join('') +
+    `<th class="text-right">Grand Total</th>`;
+
+  tbody.innerHTML = '';
+
+  const matrix = {};
+  allCategories.forEach(cat => {
+    matrix[cat] = {};
+    activeMonthsList.forEach(m => { matrix[cat][m] = 0; });
+    matrix[cat]['Grand Total'] = 0;
+  });
+
+  const colTotals = {};
+  activeMonthsList.forEach(m => { colTotals[m] = 0; });
+  colTotals['Grand Total'] = 0;
+
+  (txs || []).forEach(t => {
+    const c = (t.category || '').trim().toUpperCase();
+    const m = (t.bulan || '').trim();
+    const p = t.price_num || 0;
+    if (matrix[c] && matrix[c][m] !== undefined) {
+      matrix[c][m] += p;
+      matrix[c]['Grand Total'] += p;
+      colTotals[m] += p;
+      colTotals['Grand Total'] += p;
+    }
+  });
+
+  let maxVal = 1;
+  allCategories.forEach(cat => {
+    activeMonthsList.forEach(m => {
+      if (matrix[cat][m] > maxVal) maxVal = matrix[cat][m];
+    });
+  });
+
+  allCategories.forEach(cat => {
+    const tr = document.createElement('tr');
+    let cellsHtml = `<td><strong>${cat}</strong></td>`;
+    activeMonthsList.forEach(m => {
+      const num = matrix[cat][m] || 0;
+      let highlightClass = '';
+      if (num > maxVal * 0.4 && num > 0) {
+        highlightClass = 'matrix-cell-highlight';
+      }
+      cellsHtml += `<td class="text-right ${highlightClass}">${num > 0 ? formatRp(num) : '-'}</td>`;
+    });
+    const rowTotal = matrix[cat]['Grand Total'] || 0;
+    cellsHtml += `<td class="text-right font-bold">${rowTotal > 0 ? formatRp(rowTotal) : '-'}</td>`;
+    tr.innerHTML = cellsHtml;
+    tbody.appendChild(tr);
+  });
+
+  // Grand Total Row
+  const trTotal = document.createElement('tr');
+  trTotal.classList.add('total-row');
+  let totalCells = `<td><strong>GRAND TOTAL</strong></td>`;
+  activeMonthsList.forEach(m => {
+    const num = colTotals[m] || 0;
+    totalCells += `<td class="text-right font-mono font-bold text-danger">${num > 0 ? formatRp(num) : '-'}</td>`;
+  });
+  const grandTotalAll = colTotals['Grand Total'] || 0;
+  totalCells += `<td class="text-right font-mono font-bold text-danger">${grandTotalAll > 0 ? formatRp(grandTotalAll) : '-'}</td>`;
   trTotal.innerHTML = totalCells;
   tbody.appendChild(trTotal);
 }
@@ -2435,16 +2898,43 @@ function updateMasterFilterStatusUI(totalKredit, totalCashOut, activeMonths, isA
       const firstM = CHRONO_MONTHS[0] || 'Bulan 8 2025';
       const lastM = CHRONO_MONTHS[CHRONO_MONTHS.length - 1] || 'Bulan 10 2026';
       statusRangeText.textContent = `Semua Periode (${firstM} s/d ${lastM} • ${CHRONO_MONTHS.length} Bulan)`;
-    } else if (mf.mode === 'bulan') {
-      const sName = MONTH_NAMES_MAP[mf.startBulan] || mf.startBulan;
-      const eName = MONTH_NAMES_MAP[mf.endBulan] || mf.endBulan;
-      if (mf.startBulan === mf.endBulan) {
-        statusRangeText.textContent = `${mf.startBulan} (${sName})`;
-      } else {
-        statusRangeText.textContent = `${mf.startBulan} s/d ${mf.endBulan} (${activeMonths.length} Bulan: ${sName} - ${eName})`;
-      }
     } else {
-      statusRangeText.textContent = `${formatISODateToDisplay(mf.startDate)} s/d ${formatISODateToDisplay(mf.endDate)}`;
+      const allMonthsCount = CHRONO_MONTHS.length;
+      const allRegsCount = getActiveDatasetRegions(state.transactions).filter(r => r !== 'Grand Total').length;
+      const allCatsCount = getActiveDatasetCategories(state.transactions).length;
+
+      const selMonthsCount = (mf.selectedMonths || []).length;
+      const selRegsCount = (mf.selectedRegions || []).length;
+      const selCatsCount = (mf.selectedCategories || []).length;
+
+      const parts = [];
+      if (selMonthsCount < allMonthsCount) {
+        if (selMonthsCount === 1) {
+          parts.push(mf.selectedMonths[0]);
+        } else {
+          parts.push(`${selMonthsCount} Bulan`);
+        }
+      }
+      if (selRegsCount < allRegsCount) {
+        if (selRegsCount === 1) {
+          parts.push(`Region ${mf.selectedRegions[0]}`);
+        } else {
+          parts.push(`${selRegsCount} Region`);
+        }
+      }
+      if (selCatsCount < allCatsCount) {
+        if (selCatsCount === 1) {
+          parts.push(`Kategori ${mf.selectedCategories[0]}`);
+        } else {
+          parts.push(`${selCatsCount} Kategori`);
+        }
+      }
+
+      if (parts.length > 0) {
+        statusRangeText.textContent = `Filter Aktif: ${parts.join(' • ')}`;
+      } else {
+        statusRangeText.textContent = `${activeMonths.length} Bulan Terpilih`;
+      }
     }
   }
 

@@ -150,7 +150,7 @@
         </div>
       </div>
 
-      <!-- Controls Row: Presets Only -->
+      <!-- Controls Row: Presets & Multi-Select Dropdowns -->
       <div class="master-filter-controls">
         <div class="mf-presets" id="mfPresetsContainer">
           <span class="mf-presets-label">Pintasan:</span>
@@ -160,6 +160,91 @@
           <button type="button" class="mf-preset-btn" data-preset="2025" data-year="2025">Tahun 2025</button>
           <button type="button" class="mf-preset-btn" data-preset="2026" data-year="2026">Tahun 2026</button>
           <button type="button" class="mf-preset-btn" data-preset="latest">Bulan Terbaru</button>
+        </div>
+
+        <div class="mf-multiselect-row">
+          <span class="mf-filter-group-label">Filter Global:</span>
+
+          <!-- Multi-Select Bulan -->
+          <div class="ms-dropdown" id="msDropdownBulan">
+            <button type="button" class="ms-trigger" id="btnMsBulan" aria-haspopup="listbox" aria-expanded="false">
+              <span class="ms-trigger-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </span>
+              <span class="ms-trigger-label" id="lblMsBulan">Semua Bulan</span>
+              <span class="ms-badge" id="badgeMsBulan" style="display:none;">0</span>
+              <svg class="ms-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="ms-menu" id="menuMsBulan" role="listbox">
+              <div class="ms-menu-header">
+                <div class="ms-search-box">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" class="ms-search-input" id="searchMsBulan" placeholder="Cari bulan...">
+                </div>
+                <div class="ms-actions">
+                  <button type="button" class="ms-action-btn" id="btnSelectAllBulan">Pilih Semua</button>
+                  <button type="button" class="ms-action-btn" id="btnClearBulan">Reset</button>
+                </div>
+              </div>
+              <div class="ms-options-list" id="listMsBulan"></div>
+            </div>
+          </div>
+
+          <!-- Multi-Select Region -->
+          <div class="ms-dropdown" id="msDropdownRegion">
+            <button type="button" class="ms-trigger" id="btnMsRegion" aria-haspopup="listbox" aria-expanded="false">
+              <span class="ms-trigger-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+              </span>
+              <span class="ms-trigger-label" id="lblMsRegion">Semua Region</span>
+              <span class="ms-badge" id="badgeMsRegion" style="display:none;">0</span>
+              <svg class="ms-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="ms-menu" id="menuMsRegion" role="listbox">
+              <div class="ms-menu-header">
+                <div class="ms-search-box">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" class="ms-search-input" id="searchMsRegion" placeholder="Cari region...">
+                </div>
+                <div class="ms-actions">
+                  <button type="button" class="ms-action-btn" id="btnSelectAllRegion">Pilih Semua</button>
+                  <button type="button" class="ms-action-btn" id="btnClearRegion">Reset</button>
+                </div>
+              </div>
+              <div class="ms-options-list" id="listMsRegion"></div>
+            </div>
+          </div>
+
+          <!-- Multi-Select Kategori -->
+          <div class="ms-dropdown" id="msDropdownCategory">
+            <button type="button" class="ms-trigger" id="btnMsCategory" aria-haspopup="listbox" aria-expanded="false">
+              <span class="ms-trigger-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              </span>
+              <span class="ms-trigger-label" id="lblMsCategory">Semua Kategori</span>
+              <span class="ms-badge" id="badgeMsCategory" style="display:none;">0</span>
+              <svg class="ms-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="ms-menu" id="menuMsCategory" role="listbox">
+              <div class="ms-menu-header">
+                <div class="ms-search-box">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" class="ms-search-input" id="searchMsCategory" placeholder="Cari kategori...">
+                </div>
+                <div class="ms-actions">
+                  <button type="button" class="ms-action-btn" id="btnSelectAllCategory">Pilih Semua</button>
+                  <button type="button" class="ms-action-btn" id="btnClearCategory">Reset</button>
+                </div>
+              </div>
+              <div class="ms-options-list" id="listMsCategory"></div>
+            </div>
+          </div>
+
+          <!-- Quick Reset Filter Button -->
+          <button type="button" class="btn btn-sm btn-ghost" id="btnResetMultiSelectFilters" title="Kembalikan semua filter ke kondisi awal">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <span>Reset Filter Global</span>
+          </button>
         </div>
       </div>
 
@@ -201,7 +286,7 @@
       </button>
       <button class="tab-btn" data-tab="tab-costdetail" role="tab" id="tabCostDetailBtn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
-        <span>Cost Detail (Category x Region)</span>
+        <span>Cost Detail Matrix</span>
       </button>
       <button class="tab-btn" data-tab="tab-pricematrix" role="tab" id="tabPriceMatrixBtn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -421,12 +506,24 @@
     <!-- TAB 3: COST DETAIL MATRIX (CATEGORY X REGION) -->
     <section id="tab-costdetail" class="tab-pane">
       <div class="content-card">
-        <div class="card-header">
-          <div>
-            <h2 class="card-title">Matrix Cost Detail (Category × Region)</h2>
-            <p class="card-subtitle">Tabel silang alokasi pengeluaran per kategori kegiatan terhadap seluruh region</p>
+        <div class="card-header flex-wrap-header">
+          <div class="header-titles">
+            <div class="title-with-toggle">
+              <h2 class="card-title" id="costDetailTitle">Matrix Cost Detail (Category × Region)</h2>
+              <div class="matrix-view-toggle">
+                <button type="button" class="matrix-toggle-btn active" data-view="cat-region" id="btnToggleCatRegion" title="Tampilkan per Region">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+                  <span>Category × Region</span>
+                </button>
+                <button type="button" class="matrix-toggle-btn" data-view="cat-bulan" id="btnToggleCatBulan" title="Tampilkan per Bulan">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <span>Category × Bulan (Cost per Bulan)</span>
+                </button>
+              </div>
+            </div>
+            <p class="card-subtitle" id="costDetailSubtitle">Tabel silang alokasi pengeluaran per kategori kegiatan terhadap seluruh region</p>
           </div>
-          <button class="btn btn-secondary" onclick="exportTableToCSV('tableCostDetail', 'CostDetail_Category_Region.csv')">
+          <button class="btn btn-secondary" id="btnExportCostDetailDynamic">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span>Export CSV</span>
           </button>
