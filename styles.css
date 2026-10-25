@@ -2211,4 +2211,145 @@ body.light-theme .toast-stat-pill {
   font-weight: 500;
 }
 
+/* ==========================================================================
+   Section 1B: PO & Invoice Revenue KPIs (Khusus Data Gabungan)
+   ========================================================================== */
+
+.kpi-po-invoice-section {
+  margin-bottom: 24px;
+  padding: 20px 22px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(30, 41, 59, 0.5) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(14px);
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-po-invoice-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #38bdf8, #06b6d4, #10b981);
+}
+
+.kpi-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.kpi-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.kpi-section-title svg {
+  color: var(--primary);
+}
+
+.kpi-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1200px) {
+  .kpi-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .kpi-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card Accents & Colors */
+.kpi-card.accent-blue::before { background: linear-gradient(90deg, #0284c7, #38bdf8); }
+.kpi-card.accent-cyan::before { background: linear-gradient(90deg, #0891b2, #06b6d4); }
+.kpi-card.accent-amber::before { background: linear-gradient(90deg, #d97706, #f59e0b); }
+.kpi-card.accent-emerald::before { background: linear-gradient(90deg, #059669, #10b981); }
+
+.bg-blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+.bg-cyan { background: rgba(6, 182, 212, 0.15); color: #06b6d4; }
+.bg-amber { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.bg-emerald { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+
+.text-blue { color: #38bdf8; }
+.text-cyan { color: #06b6d4; }
+.text-amber { color: #f59e0b; }
+
+.badge-blue {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.badge-cyan {
+  background: rgba(6, 182, 212, 0.15);
+  color: #06b6d4;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.badge-amber {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Client Mini Breakdown */
+.kpi-client-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 12px 0;
+}
+
+.client-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  font-size: 0.73rem;
+  color: var(--text-secondary);
+}
+
+.client-pill strong {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.client-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.ti-dot { background: #38bdf8; box-shadow: 0 0 6px rgba(56, 189, 248, 0.6); }
+.zte-dot { background: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.6); }
+.hw-dot { background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.6); }
+
+
 

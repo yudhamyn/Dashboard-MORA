@@ -123,6 +123,9 @@ const state = {
     sarah: { summary: null, transactions: [] },
     all: { summary: null, transactions: [] }
   },
+  poInvoiceData: (typeof window !== 'undefined' && window.PO_INVOICE_DATA) ? window.PO_INVOICE_DATA : null,
+  poInvoiceView: 'po-comparison', // 'po-comparison' | 'po-pivot' | 'inv-pivot'
+  monthCashOutMap: {},
   summary: null,
   transactions: [],
   masterFilteredTransactions: [],
@@ -139,6 +142,7 @@ const state = {
     startDate: '2025-08-01',
     endDate: '2026-10-11',
     preset: 'all',
+    selectedYears: [],
     selectedMonths: [],
     selectedRegions: [],
     selectedCategories: []
@@ -296,6 +300,22 @@ function initEventListeners() {
   // Export Filtered Transactions
   document.getElementById('btnExportFilteredTx').addEventListener('click', exportFilteredTransactionsToCSV);
 
+  // Tab 6: Detail PO & Invoice Controls
+  ['btnTogglePoComparison', 'btnTogglePoPivot', 'btnToggleInvPivot'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const view = btn.dataset.view;
+      if (view && view !== state.poInvoiceView) {
+        setPoInvoiceView(view);
+      }
+    });
+  });
+  const btnExportPo = document.getElementById('btnExportPoInvoiceDynamic');
+  if (btnExportPo) {
+    btnExportPo.addEventListener('click', exportPoInvoiceDynamic);
+  }
+
   // Master Filter Event Listeners
   initMasterFilterEventListeners();
 
@@ -433,6 +453,20 @@ function switchAdminView(adminKey, savePref = true) {
       filterAdmin.style.display = 'none';
       state.filters.admin = '';
       filterAdmin.value = '';
+    }
+  }
+
+  // Toggle Gabungan PO & Invoice Section & Tab Button (Khusus Gabungan)
+  const poSec = document.getElementById('kpiGabunganPoInvoiceSection');
+  const poTabBtn = document.getElementById('tabPoInvoiceBtn');
+  if (poSec) poSec.style.display = (adminKey === 'all') ? 'block' : 'none';
+  if (poTabBtn) poTabBtn.style.display = (adminKey === 'all') ? '' : 'none';
+
+  if (adminKey !== 'all') {
+    const activeTab = document.querySelector('.tab-btn.active');
+    if (activeTab && activeTab.getAttribute('data-tab') === 'tab-poinvoice') {
+      const ovTabBtn = document.querySelector('.tab-btn[data-tab="tab-overview"]');
+      if (ovTabBtn) ovTabBtn.click();
     }
   }
 
@@ -682,7 +716,12 @@ function loadDashboardData() {
     state.adminData.sarah.transactions = window.SARAH_TRANSACTIONS.map(t => normalizeTransaction(t, 'SARAH'));
   }
 
-  // 3. Fallback to fetch summary.json / summary_sarah.json if not in window
+  // 3. Initialize PO & Invoice Data (Sheet 1 & Sheet 2)
+  if (window.PO_INVOICE_DATA) {
+    state.poInvoiceData = window.PO_INVOICE_DATA;
+  }
+
+  // 4. Fallback to fetch summary.json / summary_sarah.json if not in window
   const loadPromises = [];
   if (!state.adminData.nabila.summary) {
     loadPromises.push(
@@ -1239,6 +1278,18 @@ async function syncDataDirectFromGoogleSheets() {
     `https://docs.google.com/spreadsheets/d/1mkP9QSlCsPhl-BQ8M8V8DBzPqRoXLkww0HuFUI2n4cc/gviz/tq?tqx=out:csv&gid=857996792&t=${ts}`
   ];
 
+  const poUrls = [
+    `https://docs.google.com/spreadsheets/d/1HmfwnKo2ebZG-0FgL9u8Ba-tYVWuxU2xvQ-pWIr1Qx8/export?format=csv&gid=167250603&t=${ts}`,
+    `/api/sheets/po?t=${ts}`,
+    `https://docs.google.com/spreadsheets/d/1HmfwnKo2ebZG-0FgL9u8Ba-tYVWuxU2xvQ-pWIr1Qx8/gviz/tq?tqx=out:csv&gid=167250603&t=${ts}`
+  ];
+
+  const invoiceUrls = [
+    `https://docs.google.com/spreadsheets/d/1HmfwnKo2ebZG-0FgL9u8Ba-tYVWuxU2xvQ-pWIr1Qx8/export?format=csv&gid=996137979&t=${ts}`,
+    `/api/sheets/invoice?t=${ts}`,
+    `https://docs.google.com/spreadsheets/d/1HmfwnKo2ebZG-0FgL9u8Ba-tYVWuxU2xvQ-pWIr1Qx8/gviz/tq?tqx=out:csv&gid=996137979&t=${ts}`
+  ];
+
   async function fetchWithFallback(urls, label) {
     let lastErr = null;
     for (const u of urls) {
@@ -1280,6 +1331,21 @@ async function syncDataDirectFromGoogleSheets() {
 
     const newNabilaTxs = parseTransferCSV(nabilaTransferCsv, 'NABILA');
     const newSarahTxs = parseTransferCSV(sarahTransferCsv, 'SARAH');
+
+    // Mengunduh Sheet 1 (SUM PO) dan Sheet 2 (SUM INVOICE)
+    try {
+      badgeText.textContent = 'Mengunduh Sheet PO & Invoice...';
+      const [poCsv, invCsv] = await Promise.all([
+        fetchWithFallback(poUrls, 'PO Sheet 1'),
+        fetchWithFallback(invoiceUrls, 'Invoice Sheet 2')
+      ]);
+      state.poInvoiceData = parsePoInvoiceCSVs(poCsv, invCsv);
+    } catch (ePo) {
+      console.warn('PO/Invoice live sync notice, using local bundle:', ePo);
+      if (!state.poInvoiceData && window.PO_INVOICE_DATA) {
+        state.poInvoiceData = window.PO_INVOICE_DATA;
+      }
+    }
 
     state.adminData.nabila = {
       summary: newNabilaSummary,
@@ -1355,6 +1421,9 @@ async function syncDataDirectFromGoogleSheets() {
     }
     if (state.adminData.nabila.summary && state.adminData.sarah.summary) {
       state.adminData.all = createCombinedDataset(state.adminData.nabila, state.adminData.sarah);
+    }
+    if (!state.poInvoiceData && window.PO_INVOICE_DATA) {
+      state.poInvoiceData = window.PO_INVOICE_DATA;
     }
     switchAdminView(state.activeAdmin, false);
 
@@ -2025,8 +2094,10 @@ function applyMasterFilterPreset(presetKey) {
     mf.startDate = minDate;
     mf.endDate = maxDate;
     mf.selectedMonths = [...CHRONO_MONTHS];
+    mf.selectedYears = getActiveDatasetYears();
   } else if (presetKey === '2023' || presetKey === '2024' || presetKey === '2025' || presetKey === '2026') {
     const yr = presetKey;
+    mf.selectedYears = [yr];
     mf.selectedMonths = CHRONO_MONTHS.filter(m => m.endsWith(yr));
     mf.startBulan = mf.selectedMonths[0] || CHRONO_MONTHS[0];
     mf.endBulan = mf.selectedMonths[mf.selectedMonths.length - 1] || latestMonth;
@@ -2041,6 +2112,7 @@ function applyMasterFilterPreset(presetKey) {
     const yNum = mMatch ? mMatch[2] : '2026';
     mf.startDate = `${yNum}-${mNum}-01`;
     mf.endDate = maxDate;
+    mf.selectedYears = [yNum];
   }
 
   const startSelect = document.getElementById('mfStartBulan');
@@ -2060,6 +2132,9 @@ function applyMasterFilterPreset(presetKey) {
   }
 
   syncBulanCheckboxesFromState();
+  syncTahunCheckboxesFromState();
+  updateMultiSelectTriggerUI('tahun');
+  updateMultiSelectTriggerUI('bulan');
   applyMasterFilter();
 }
 
@@ -2068,7 +2143,7 @@ function applyMasterFilterPreset(presetKey) {
 // ==========================================================================
 
 function initMultiSelectDropdowns() {
-  const dropdownTypes = ['Bulan', 'Region', 'Category'];
+  const dropdownTypes = ['Tahun', 'Bulan', 'Region', 'Category'];
 
   // Toggle dropdown menu open/close on trigger button click
   dropdownTypes.forEach(type => {
@@ -2154,25 +2229,29 @@ function initMultiSelectDropdowns() {
 
 // Populate / Rebuild Multi-Select Dropdown Lists
 function populateMultiSelectDropdowns() {
+  const allYears = getActiveDatasetYears();
   const allMonths = [...CHRONO_MONTHS];
   const allRegs = getActiveDatasetRegions(state.transactions).filter(r => r !== 'Grand Total');
   const allCats = getActiveDatasetCategories(state.transactions);
 
+  state.masterFilter.selectedYears = [...allYears];
   state.masterFilter.selectedMonths = [...allMonths];
   state.masterFilter.selectedRegions = [...allRegs];
   state.masterFilter.selectedCategories = [...allCats];
 
+  renderMultiSelectList('tahun', allYears, state.masterFilter.selectedYears);
   renderMultiSelectList('bulan', allMonths, state.masterFilter.selectedMonths);
   renderMultiSelectList('region', allRegs, state.masterFilter.selectedRegions);
   renderMultiSelectList('category', allCats, state.masterFilter.selectedCategories);
 
+  updateMultiSelectTriggerUI('tahun');
   updateMultiSelectTriggerUI('bulan');
   updateMultiSelectTriggerUI('region');
   updateMultiSelectTriggerUI('category');
 }
 
 function renderMultiSelectList(type, allItems, selectedItems) {
-  const listId = type === 'bulan' ? 'listMsBulan' : type === 'region' ? 'listMsRegion' : 'listMsCategory';
+  const listId = type === 'tahun' ? 'listMsTahun' : type === 'bulan' ? 'listMsBulan' : type === 'region' ? 'listMsRegion' : 'listMsCategory';
   const listEl = document.getElementById(listId);
   if (!listEl) return;
 
@@ -2192,7 +2271,9 @@ function renderMultiSelectList(type, allItems, selectedItems) {
 
     const span = document.createElement('span');
     span.className = 'ms-option-text';
-    if (type === 'bulan' && MONTH_NAMES_MAP[item]) {
+    if (type === 'tahun') {
+      span.textContent = `Tahun ${item}`;
+    } else if (type === 'bulan' && MONTH_NAMES_MAP[item]) {
       span.textContent = `${item} (${MONTH_NAMES_MAP[item]})`;
     } else {
       span.textContent = item;
@@ -2210,15 +2291,37 @@ function renderMultiSelectList(type, allItems, selectedItems) {
 }
 
 function onMultiSelectOptionChanged(type) {
-  const listId = type === 'bulan' ? 'listMsBulan' : type === 'region' ? 'listMsRegion' : 'listMsCategory';
+  const listId = type === 'tahun' ? 'listMsTahun' : type === 'bulan' ? 'listMsBulan' : type === 'region' ? 'listMsRegion' : 'listMsCategory';
   const listEl = document.getElementById(listId);
   if (!listEl) return;
 
   const checkedInputs = listEl.querySelectorAll('input[type="checkbox"]:checked');
   const checkedVals = Array.from(checkedInputs).map(cb => cb.value);
 
-  if (type === 'bulan') {
+  if (type === 'tahun') {
+    state.masterFilter.selectedYears = checkedVals;
+    if (checkedVals.length === 0) {
+      state.masterFilter.selectedMonths = [];
+    } else {
+      const yrSet = new Set(checkedVals);
+      state.masterFilter.selectedMonths = CHRONO_MONTHS.filter(m => {
+        const match = m.match(/\b(20\d\d)\b/);
+        return match && yrSet.has(match[1]);
+      });
+    }
+    syncBulanCheckboxesFromState();
+    updateMultiSelectTriggerUI('bulan');
+    clearActiveMasterPresets();
+  } else if (type === 'bulan') {
     state.masterFilter.selectedMonths = checkedVals;
+    const yrSet = new Set();
+    checkedVals.forEach(m => {
+      const match = m.match(/\b(20\d\d)\b/);
+      if (match) yrSet.add(match[1]);
+    });
+    state.masterFilter.selectedYears = Array.from(yrSet).sort();
+    syncTahunCheckboxesFromState();
+    updateMultiSelectTriggerUI('tahun');
     clearActiveMasterPresets();
   } else if (type === 'region') {
     state.masterFilter.selectedRegions = checkedVals;
@@ -2231,7 +2334,7 @@ function onMultiSelectOptionChanged(type) {
 }
 
 function selectAllMultiSelectOptions(type) {
-  const listId = type === 'bulan' ? 'listMsBulan' : type === 'region' ? 'listMsRegion' : 'listMsCategory';
+  const listId = type === 'tahun' ? 'listMsTahun' : type === 'bulan' ? 'listMsBulan' : type === 'region' ? 'listMsRegion' : 'listMsCategory';
   const listEl = document.getElementById(listId);
   if (!listEl) return;
 
@@ -2243,8 +2346,16 @@ function selectAllMultiSelectOptions(type) {
     allVals.push(cb.value);
   });
 
-  if (type === 'bulan') {
+  if (type === 'tahun') {
+    state.masterFilter.selectedYears = allVals;
+    state.masterFilter.selectedMonths = [...CHRONO_MONTHS];
+    syncBulanCheckboxesFromState();
+    updateMultiSelectTriggerUI('bulan');
+  } else if (type === 'bulan') {
     state.masterFilter.selectedMonths = allVals;
+    state.masterFilter.selectedYears = getActiveDatasetYears();
+    syncTahunCheckboxesFromState();
+    updateMultiSelectTriggerUI('tahun');
   } else if (type === 'region') {
     state.masterFilter.selectedRegions = allVals;
   } else if (type === 'category') {
@@ -2256,7 +2367,7 @@ function selectAllMultiSelectOptions(type) {
 }
 
 function clearMultiSelectOptions(type) {
-  const listId = type === 'bulan' ? 'listMsBulan' : type === 'region' ? 'listMsRegion' : 'listMsCategory';
+  const listId = type === 'tahun' ? 'listMsTahun' : type === 'bulan' ? 'listMsBulan' : type === 'region' ? 'listMsRegion' : 'listMsCategory';
   const listEl = document.getElementById(listId);
   if (!listEl) return;
 
@@ -2266,8 +2377,17 @@ function clearMultiSelectOptions(type) {
     cb.closest('.ms-option')?.classList.remove('selected');
   });
 
-  if (type === 'bulan') {
+  if (type === 'tahun') {
+    state.masterFilter.selectedYears = [];
     state.masterFilter.selectedMonths = [];
+    syncBulanCheckboxesFromState();
+    updateMultiSelectTriggerUI('bulan');
+    clearActiveMasterPresets();
+  } else if (type === 'bulan') {
+    state.masterFilter.selectedMonths = [];
+    state.masterFilter.selectedYears = [];
+    syncTahunCheckboxesFromState();
+    updateMultiSelectTriggerUI('tahun');
     clearActiveMasterPresets();
   } else if (type === 'region') {
     state.masterFilter.selectedRegions = [];
@@ -2280,7 +2400,7 @@ function clearMultiSelectOptions(type) {
 }
 
 function filterMultiSelectOptionsBySearch(type, searchText) {
-  const listId = type === 'bulan' ? 'listMsBulan' : type === 'region' ? 'listMsRegion' : 'listMsCategory';
+  const listId = type === 'tahun' ? 'listMsTahun' : type === 'bulan' ? 'listMsBulan' : type === 'region' ? 'listMsRegion' : 'listMsCategory';
   const listEl = document.getElementById(listId);
   if (!listEl) return;
 
@@ -2295,7 +2415,13 @@ function filterMultiSelectOptionsBySearch(type, searchText) {
 function updateMultiSelectTriggerUI(type) {
   let lblEl, badgeEl, selectedList, totalAvailable, defaultLabel;
 
-  if (type === 'bulan') {
+  if (type === 'tahun') {
+    lblEl = document.getElementById('lblMsTahun');
+    badgeEl = document.getElementById('badgeMsTahun');
+    selectedList = state.masterFilter.selectedYears || [];
+    totalAvailable = getActiveDatasetYears().length;
+    defaultLabel = 'Semua Tahun';
+  } else if (type === 'bulan') {
     lblEl = document.getElementById('lblMsBulan');
     badgeEl = document.getElementById('badgeMsBulan');
     selectedList = state.masterFilter.selectedMonths || [];
@@ -2320,18 +2446,18 @@ function updateMultiSelectTriggerUI(type) {
   const count = selectedList.length;
 
   if (count === 0) {
-    lblEl.textContent = `0 ${type === 'bulan' ? 'Bulan' : type === 'region' ? 'Region' : 'Kategori'} Terpilih`;
+    lblEl.textContent = `0 ${type === 'tahun' ? 'Tahun' : type === 'bulan' ? 'Bulan' : type === 'region' ? 'Region' : 'Kategori'} Terpilih`;
     badgeEl.textContent = '0';
     badgeEl.style.display = 'inline-flex';
   } else if (count >= totalAvailable) {
     lblEl.textContent = defaultLabel;
     badgeEl.style.display = 'none';
   } else if (count === 1) {
-    lblEl.textContent = selectedList[0];
+    lblEl.textContent = (type === 'tahun' ? `Tahun ${selectedList[0]}` : selectedList[0]);
     badgeEl.textContent = '1';
     badgeEl.style.display = 'inline-flex';
   } else {
-    lblEl.textContent = `${count} ${type === 'bulan' ? 'Bulan' : type === 'region' ? 'Region' : 'Kategori'} Terpilih`;
+    lblEl.textContent = `${count} ${type === 'tahun' ? 'Tahun' : type === 'bulan' ? 'Bulan' : type === 'region' ? 'Region' : 'Kategori'} Terpilih`;
     badgeEl.textContent = String(count);
     badgeEl.style.display = 'inline-flex';
   }
@@ -2352,8 +2478,24 @@ function syncBulanCheckboxesFromState() {
   updateMultiSelectTriggerUI('bulan');
 }
 
+function syncTahunCheckboxesFromState() {
+  const listEl = document.getElementById('listMsTahun');
+  if (!listEl) return;
+
+  const selSet = new Set(state.masterFilter.selectedYears || []);
+  const checkboxes = listEl.querySelectorAll('input[type="checkbox"]');
+  checkboxes.forEach(cb => {
+    const isChecked = selSet.has(cb.value);
+    cb.checked = isChecked;
+    cb.closest('.ms-option')?.classList.toggle('selected', isChecked);
+  });
+
+  updateMultiSelectTriggerUI('tahun');
+}
+
 function resetAllMasterAndMultiSelectFilters() {
   applyMasterFilterPreset('all');
+  selectAllMultiSelectOptions('tahun');
   selectAllMultiSelectOptions('region');
   selectAllMultiSelectOptions('category');
 }
@@ -2456,6 +2598,7 @@ function applyMasterFilter() {
       monthCashOutMap[t.bulan] = (monthCashOutMap[t.bulan] || 0) + (t.price_num || 0);
     }
   });
+  state.monthCashOutMap = monthCashOutMap;
 
   const adaptedCf = filteredCf.map(item => {
     if (isRegionFiltered || isCatFiltered) {
@@ -2557,7 +2700,10 @@ function applyMasterFilter() {
   state.currentPage = 1;
   applyFilters();
 
-  // 8. Update Master Filter Status Bar
+  // 8. Update Gabungan PO & Invoice KPIs & Tab 6 Pivot Table
+  updatePoInvoiceKpisAndTables(totalCashOut, activeMonths, isAll);
+
+  // 9. Update Master Filter Status Bar
   updateMasterFilterStatusUI(totalKredit, totalCashOut, activeMonths, isAll);
 }
 
@@ -2597,6 +2743,20 @@ function getActiveDatasetCategories(txs) {
     if (t.category) catSet.add(t.category.trim().toUpperCase());
   });
   return Array.from(catSet).sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }));
+}
+
+// Helper: Get active dataset years (dynamically from CHRONO_MONTHS and transactions)
+function getActiveDatasetYears() {
+  const yearSet = new Set();
+  (CHRONO_MONTHS || []).forEach(m => {
+    const match = m.match(/\b(20\d\d)\b/);
+    if (match) yearSet.add(match[1]);
+  });
+  if (yearSet.size === 0) {
+    yearSet.add('2025');
+    yearSet.add('2026');
+  }
+  return Array.from(yearSet).sort();
 }
 
 // Master Filter: Dynamically Rebuild Cost Detail Matrix
@@ -3292,4 +3452,472 @@ function exportFilteredTransactionsToCSV() {
     ],
     duration: 4000
   });
+}
+
+// ==========================================================================
+// Section 1B & Tab 6: PO Released & Cash Piutang In (Khusus Data Gabungan)
+// ==========================================================================
+
+const PO_PERIOD_TO_BULAN = {
+  'Jan-25': 'Bulan 1 2025', 'Feb-25': 'Bulan 2 2025', 'Mar-25': 'Bulan 3 2025',
+  'Apr-25': 'Bulan 4 2025', 'May-25': 'Bulan 5 2025', 'Mei-25': 'Bulan 5 2025',
+  'Jun-25': 'Bulan 6 2025', 'Jul-25': 'Bulan 7 2025', 'Aug-25': 'Bulan 8 2025', 'Agu-25': 'Bulan 8 2025',
+  'Sep-25': 'Bulan 9 2025', 'Sept-25': 'Bulan 9 2025',
+  'Oct-25': 'Bulan 10 2025', 'Okt-25': 'Bulan 10 2025',
+  'Nov-25': 'Bulan 11 2025', 'Dec-25': 'Bulan 12 2025', 'Des-25': 'Bulan 12 2025',
+  'Jan-26': 'Bulan 1 2026', 'Feb-26': 'Bulan 2 2026', 'Mar-26': 'Bulan 3 2026',
+  'Apr-26': 'Bulan 4 2026', 'May-26': 'Bulan 5 2026', 'Mei-26': 'Bulan 5 2026',
+  'Jun-26': 'Bulan 6 2026', 'Jul-26': 'Bulan 7 2026', 'Aug-26': 'Bulan 8 2026', 'Agu-26': 'Bulan 8 2026',
+  'Sep-26': 'Bulan 9 2026', 'Sept-26': 'Bulan 9 2026',
+  'Oct-26': 'Bulan 10 2026', 'Okt-26': 'Bulan 10 2026',
+  'Nov-26': 'Bulan 11 2026', 'Dec-26': 'Bulan 12 2026', 'Des-26': 'Bulan 12 2026'
+};
+
+const BULAN_TO_PO_PERIOD = {};
+Object.entries(PO_PERIOD_TO_BULAN).forEach(([period, bulan]) => {
+  BULAN_TO_PO_PERIOD[bulan] = period;
+});
+
+function parsePoInvoiceCSVs(poCSV, invCSV) {
+  function parseVal(s) {
+    if (!s) return 0;
+    const str = s.toString().replace(/Rp/gi, '').replace(/,/g, '').replace(/\s+/g, '').trim();
+    const val = parseFloat(str);
+    return isNaN(val) ? 0 : val;
+  }
+
+  function extractSheetData(lines) {
+    const monthly = [];
+    let y2025 = null;
+    let y2026 = null;
+    let totalAll = null;
+
+    for (let i = 5; i < lines.length; i++) {
+      const row = lines[i];
+      if (!row || !row[2]) continue;
+      const period = (row[2] || '').trim();
+      if (!period) continue;
+      const telkom = parseVal(row[3]);
+      const zte = parseVal(row[4]);
+      const huawei = parseVal(row[5]);
+      const total = parseVal(row[6]);
+      const mutasiTelkom = parseVal(row[11]);
+      const mutasiZte = parseVal(row[12]);
+      const mutasiHuawei = parseVal(row[13]);
+      const mutasiTotal = parseVal(row[14]);
+
+      const item = {
+        period,
+        telkominfra: telkom,
+        zte,
+        huawei,
+        total,
+        mutasi: {
+          telkominfra: mutasiTelkom,
+          zte: mutasiZte,
+          huawei: mutasiHuawei,
+          total: mutasiTotal
+        }
+      };
+
+      if (period === 'Y-2025') y2025 = item;
+      else if (period === 'Y-2026') y2026 = item;
+      else if (period === 'TOTAL ALL') totalAll = item;
+      else monthly.push(item);
+    }
+
+    return { monthly, y2025, y2026, total_all: totalAll };
+  }
+
+  const po = extractSheetData(parseCSV(poCSV));
+  const invoice = extractSheetData(parseCSV(invCSV));
+
+  return {
+    updated_at: new Date().toISOString(),
+    po,
+    invoice
+  };
+}
+
+function updatePoInvoiceKpisAndTables(totalCashOut, activeMonths, isAll) {
+  const isCombined = (state.activeAdmin === 'all');
+  const poSec = document.getElementById('kpiGabunganPoInvoiceSection');
+  const poTabBtn = document.getElementById('tabPoInvoiceBtn');
+
+  if (!isCombined) {
+    if (poSec) poSec.style.display = 'none';
+    if (poTabBtn) poTabBtn.style.display = 'none';
+    return;
+  }
+
+  if (poSec) poSec.style.display = 'block';
+  if (poTabBtn) poTabBtn.style.display = '';
+
+  const poData = state.poInvoiceData?.po;
+  const invData = state.poInvoiceData?.invoice;
+  if (!poData || !invData) return;
+
+  let totalPo = 0, poTI = 0, poZte = 0, poHw = 0;
+  let totalInvoice = 0, invTI = 0, invZte = 0, invHw = 0;
+
+  if (isAll) {
+    totalPo = poData.total_all?.total || 0;
+    poTI = poData.total_all?.telkominfra || 0;
+    poZte = poData.total_all?.zte || 0;
+    poHw = poData.total_all?.huawei || 0;
+
+    totalInvoice = invData.total_all?.total || 0;
+    invTI = invData.total_all?.telkominfra || 0;
+    invZte = invData.total_all?.zte || 0;
+    invHw = invData.total_all?.huawei || 0;
+  } else {
+    const activeMonthsSet = new Set(activeMonths || []);
+    (poData.monthly || []).forEach(m => {
+      const b = PO_PERIOD_TO_BULAN[m.period];
+      if (b && activeMonthsSet.has(b)) {
+        totalPo += (m.total || 0);
+        poTI += (m.telkominfra || 0);
+        poZte += (m.zte || 0);
+        poHw += (m.huawei || 0);
+      }
+    });
+    (invData.monthly || []).forEach(m => {
+      const b = PO_PERIOD_TO_BULAN[m.period];
+      if (b && activeMonthsSet.has(b)) {
+        totalInvoice += (m.total || 0);
+        invTI += (m.telkominfra || 0);
+        invZte += (m.zte || 0);
+        invHw += (m.huawei || 0);
+      }
+    });
+  }
+
+  const unbilledPo = totalPo - totalInvoice;
+  const netMargin = totalInvoice - (totalCashOut || 0);
+
+  // Update KPI Top Cards
+  const elTotalPo = document.getElementById('kpiTotalPo');
+  const elPoTI = document.getElementById('kpiPoTelkominfra');
+  const elPoZte = document.getElementById('kpiPoZte');
+  const elPoHw = document.getElementById('kpiPoHuawei');
+
+  const elTotalInv = document.getElementById('kpiTotalInvoice');
+  const elInvTI = document.getElementById('kpiInvTelkominfra');
+  const elInvZte = document.getElementById('kpiInvZte');
+  const elInvHw = document.getElementById('kpiInvHuawei');
+
+  const elUnbilled = document.getElementById('kpiUnbilledPo');
+  const elNetMargin = document.getElementById('kpiNetMargin');
+  const badgeNetMargin = document.getElementById('badgeNetMargin');
+
+  if (elTotalPo) elTotalPo.textContent = formatRp(totalPo);
+  if (elPoTI) elPoTI.textContent = formatCompactRp(poTI);
+  if (elPoZte) elPoZte.textContent = formatCompactRp(poZte);
+  if (elPoHw) elPoHw.textContent = formatCompactRp(poHw);
+
+  if (elTotalInv) elTotalInv.textContent = formatRp(totalInvoice);
+  if (elInvTI) elInvTI.textContent = formatCompactRp(invTI);
+  if (elInvZte) elInvZte.textContent = formatCompactRp(invZte);
+  if (elInvHw) elInvHw.textContent = formatCompactRp(invHw);
+
+  if (elUnbilled) elUnbilled.textContent = formatRp(unbilledPo);
+
+  if (elNetMargin) {
+    elNetMargin.textContent = (netMargin >= 0 ? '+' : '') + formatRp(netMargin);
+    elNetMargin.className = 'kpi-value ' + (netMargin >= 0 ? 'text-success' : 'text-danger');
+  }
+  if (badgeNetMargin) {
+    badgeNetMargin.textContent = netMargin >= 0 ? 'Net Surplus' : 'Net Defisit';
+    badgeNetMargin.className = 'badge ' + (netMargin >= 0 ? 'badge-success' : 'badge-danger');
+  }
+
+  // Update Tab 6 Table
+  renderPoInvoiceTable();
+}
+
+function setPoInvoiceView(view) {
+  state.poInvoiceView = view;
+  const btnComp = document.getElementById('btnTogglePoComparison');
+  const btnPo = document.getElementById('btnTogglePoPivot');
+  const btnInv = document.getElementById('btnToggleInvPivot');
+  const title = document.getElementById('poInvoiceTitle');
+  const subtitle = document.getElementById('poInvoiceSubtitle');
+
+  if (btnComp) btnComp.classList.toggle('active', view === 'po-comparison');
+  if (btnPo) btnPo.classList.toggle('active', view === 'po-pivot');
+  if (btnInv) btnInv.classList.toggle('active', view === 'inv-pivot');
+
+  if (title) {
+    if (view === 'po-comparison') title.textContent = 'Detail PO & Invoice (Komparasi Bulanan)';
+    else if (view === 'po-pivot') title.textContent = 'Pivot Purchase Order Released (Sheet 1)';
+    else if (view === 'inv-pivot') title.textContent = 'Pivot Invoice Submit / Piutang In (Sheet 2)';
+  }
+  if (subtitle) {
+    if (view === 'po-comparison') subtitle.textContent = 'Perbandingan rilis Purchase Order vs tagihan Invoice Submit vs realisasi Cash Out per bulan';
+    else if (view === 'po-pivot') subtitle.textContent = 'Rincian perolehan PO rilis per vendor (Telkominfra, ZTE, Huawei) dan mutasi rekening per bulan';
+    else if (view === 'inv-pivot') subtitle.textContent = 'Rincian penagihan Invoice submit per vendor (Telkominfra, ZTE, Huawei) dan mutasi rekening per bulan';
+  }
+
+  renderPoInvoiceTable();
+}
+
+function renderPoInvoiceTable() {
+  const table = document.getElementById('tablePoInvoice');
+  const thead = document.getElementById('theadPoInvoice');
+  const tbody = document.getElementById('tbodyPoInvoice');
+  if (!table || !thead || !tbody) return;
+
+  const poData = state.poInvoiceData?.po;
+  const invData = state.poInvoiceData?.invoice;
+  if (!poData || !invData) {
+    thead.innerHTML = '<tr><th>Informasi</th></tr>';
+    tbody.innerHTML = '<tr><td class="text-center text-muted" style="padding: 2rem;">Data PO & Invoice belum tersedia.</td></tr>';
+    return;
+  }
+
+  const view = state.poInvoiceView || 'po-comparison';
+  const selMonths = state.masterFilter.selectedMonths || CHRONO_MONTHS;
+  const selMonthsSet = new Set(selMonths);
+  const isMonthFiltered = (selMonths.length < CHRONO_MONTHS.length);
+
+  // Filter monthly rows based on selected months
+  const filteredMonths = (poData.monthly || []).filter(m => {
+    if (!isMonthFiltered) return true;
+    const b = PO_PERIOD_TO_BULAN[m.period];
+    return b && selMonthsSet.has(b);
+  });
+
+  const invMonthMap = new Map();
+  (invData.monthly || []).forEach(m => {
+    invMonthMap.set(m.period, m);
+  });
+
+  if (view === 'po-comparison') {
+    // 1. PO vs Invoice Comparison
+    thead.innerHTML = `
+      <tr>
+        <th class="sticky-col" style="min-width: 110px;">Periode</th>
+        <th class="text-right" style="min-width: 130px;">PO Telkominfra</th>
+        <th class="text-right" style="min-width: 130px;">PO ZTE</th>
+        <th class="text-right" style="min-width: 130px;">PO Huawei</th>
+        <th class="text-right col-highlight" style="min-width: 150px; background: rgba(59, 130, 246, 0.08);">Total PO Released</th>
+        <th class="text-right" style="min-width: 130px;">Inv Telkominfra</th>
+        <th class="text-right" style="min-width: 130px;">Inv ZTE</th>
+        <th class="text-right" style="min-width: 130px;">Inv Huawei</th>
+        <th class="text-right col-highlight" style="min-width: 150px; background: rgba(6, 182, 212, 0.08);">Total Piutang In</th>
+        <th class="text-right" style="min-width: 140px;">Sisa PO (Unbilled)</th>
+        <th class="text-right" style="min-width: 140px;">Realisasi Cash Out</th>
+        <th class="text-right" style="min-width: 150px;">Surplus / Defisit</th>
+        <th class="text-right" style="min-width: 150px;">Mutasi Masuk (TI)</th>
+      </tr>
+    `;
+
+    let sumPoTI = 0, sumPoZte = 0, sumPoHw = 0, sumPoTotal = 0;
+    let sumInvTI = 0, sumInvZte = 0, sumInvHw = 0, sumInvTotal = 0;
+    let sumUnbilled = 0, sumCashOut = 0, sumNetMargin = 0, sumMutasi = 0;
+
+    let rowsHtml = '';
+    filteredMonths.forEach(poRow => {
+      const invRow = invMonthMap.get(poRow.period) || { telkominfra: 0, zte: 0, huawei: 0, total: 0, mutasi: { telkominfra: 0 } };
+      const bulanKey = PO_PERIOD_TO_BULAN[poRow.period];
+      const cashOut = (bulanKey && state.monthCashOutMap && state.monthCashOutMap[bulanKey]) ? state.monthCashOutMap[bulanKey] : 0;
+      
+      const unbilled = (poRow.total || 0) - (invRow.total || 0);
+      const net = (invRow.total || 0) - cashOut;
+      const mutasiTI = (invRow.mutasi?.telkominfra || poRow.mutasi?.telkominfra || 0);
+
+      sumPoTI += (poRow.telkominfra || 0);
+      sumPoZte += (poRow.zte || 0);
+      sumPoHw += (poRow.huawei || 0);
+      sumPoTotal += (poRow.total || 0);
+
+      sumInvTI += (invRow.telkominfra || 0);
+      sumInvZte += (invRow.zte || 0);
+      sumInvHw += (invRow.huawei || 0);
+      sumInvTotal += (invRow.total || 0);
+
+      sumUnbilled += unbilled;
+      sumCashOut += cashOut;
+      sumNetMargin += net;
+      sumMutasi += mutasiTI;
+
+      const netClass = net >= 0 ? 'text-success' : 'text-danger';
+      const netPrefix = net >= 0 ? '+' : '';
+
+      rowsHtml += `
+        <tr>
+          <td class="sticky-col font-weight-600">
+            <strong>${poRow.period}</strong>
+            ${bulanKey ? `<span class="row-subtext" style="display:block; font-size: 0.72rem; color: var(--text-muted);">${bulanKey}</span>` : ''}
+          </td>
+          <td class="text-right font-mono">${poRow.telkominfra ? formatRp(poRow.telkominfra) : '-'}</td>
+          <td class="text-right font-mono">${poRow.zte ? formatRp(poRow.zte) : '-'}</td>
+          <td class="text-right font-mono">${poRow.huawei ? formatRp(poRow.huawei) : '-'}</td>
+          <td class="text-right font-mono font-weight-700 text-blue" style="background: rgba(59, 130, 246, 0.05);">${formatRp(poRow.total)}</td>
+          <td class="text-right font-mono">${invRow.telkominfra ? formatRp(invRow.telkominfra) : '-'}</td>
+          <td class="text-right font-mono">${invRow.zte ? formatRp(invRow.zte) : '-'}</td>
+          <td class="text-right font-mono">${invRow.huawei ? formatRp(invRow.huawei) : '-'}</td>
+          <td class="text-right font-mono font-weight-700 text-cyan" style="background: rgba(6, 182, 212, 0.05);">${formatRp(invRow.total)}</td>
+          <td class="text-right font-mono font-weight-600 ${unbilled > 0 ? 'text-amber' : ''}">${formatRp(unbilled)}</td>
+          <td class="text-right font-mono">${cashOut ? formatRp(cashOut) : '-'}</td>
+          <td class="text-right font-mono font-weight-700 ${netClass}">${netPrefix}${formatRp(net)}</td>
+          <td class="text-right font-mono">${mutasiTI ? formatRp(mutasiTI) : '-'}</td>
+        </tr>
+      `;
+    });
+
+    // Grand total row
+    const totalNetClass = sumNetMargin >= 0 ? 'text-success' : 'text-danger';
+    const totalNetPrefix = sumNetMargin >= 0 ? '+' : '';
+    rowsHtml += `
+      <tr class="grand-total-row">
+        <td class="sticky-col font-weight-700">GRAND TOTAL</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumPoTI)}</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumPoZte)}</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumPoHw)}</td>
+        <td class="text-right font-mono font-weight-700 text-blue" style="background: rgba(59, 130, 246, 0.12);">${formatRp(sumPoTotal)}</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumInvTI)}</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumInvZte)}</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumInvHw)}</td>
+        <td class="text-right font-mono font-weight-700 text-cyan" style="background: rgba(6, 182, 212, 0.12);">${formatRp(sumInvTotal)}</td>
+        <td class="text-right font-mono font-weight-700 text-amber">${formatRp(sumUnbilled)}</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumCashOut)}</td>
+        <td class="text-right font-mono font-weight-700 ${totalNetClass}">${totalNetPrefix}${formatRp(sumNetMargin)}</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumMutasi)}</td>
+      </tr>
+    `;
+
+    tbody.innerHTML = rowsHtml;
+
+  } else if (view === 'po-pivot') {
+    // 2. PO Pivot View
+    thead.innerHTML = `
+      <tr>
+        <th class="sticky-col" style="min-width: 120px;">Periode</th>
+        <th class="text-right" style="min-width: 150px;">Telkominfra</th>
+        <th class="text-right" style="min-width: 150px;">ZTE</th>
+        <th class="text-right" style="min-width: 150px;">Huawei</th>
+        <th class="text-right col-highlight" style="min-width: 160px; background: rgba(59, 130, 246, 0.08);">Total PO Released</th>
+        <th class="text-right" style="min-width: 150px;">Mutasi Rekening (TI)</th>
+        <th class="text-center" style="min-width: 100px;">Share (%)</th>
+      </tr>
+    `;
+
+    let sumTI = 0, sumZte = 0, sumHw = 0, sumTotal = 0, sumMutasi = 0;
+    filteredMonths.forEach(r => {
+      sumTI += (r.telkominfra || 0);
+      sumZte += (r.zte || 0);
+      sumHw += (r.huawei || 0);
+      sumTotal += (r.total || 0);
+      sumMutasi += (r.mutasi?.telkominfra || 0);
+    });
+
+    let rowsHtml = '';
+    filteredMonths.forEach(r => {
+      const share = sumTotal > 0 ? ((r.total / sumTotal) * 100).toFixed(1) + '%' : '0%';
+      const bulanKey = PO_PERIOD_TO_BULAN[r.period];
+      rowsHtml += `
+        <tr>
+          <td class="sticky-col font-weight-600">
+            <strong>${r.period}</strong>
+            ${bulanKey ? `<span class="row-subtext" style="display:block; font-size: 0.72rem; color: var(--text-muted);">${bulanKey}</span>` : ''}
+          </td>
+          <td class="text-right font-mono">${r.telkominfra ? formatRp(r.telkominfra) : '-'}</td>
+          <td class="text-right font-mono">${r.zte ? formatRp(r.zte) : '-'}</td>
+          <td class="text-right font-mono">${r.huawei ? formatRp(r.huawei) : '-'}</td>
+          <td class="text-right font-mono font-weight-700 text-blue" style="background: rgba(59, 130, 246, 0.05);">${formatRp(r.total)}</td>
+          <td class="text-right font-mono">${r.mutasi?.telkominfra ? formatRp(r.mutasi.telkominfra) : '-'}</td>
+          <td class="text-center font-mono font-weight-600 text-muted">${share}</td>
+        </tr>
+      `;
+    });
+
+    rowsHtml += `
+      <tr class="grand-total-row">
+        <td class="sticky-col font-weight-700">GRAND TOTAL</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumTI)}</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumZte)}</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumHw)}</td>
+        <td class="text-right font-mono font-weight-700 text-blue" style="background: rgba(59, 130, 246, 0.12);">${formatRp(sumTotal)}</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumMutasi)}</td>
+        <td class="text-center font-mono font-weight-700">100%</td>
+      </tr>
+    `;
+
+    tbody.innerHTML = rowsHtml;
+
+  } else if (view === 'inv-pivot') {
+    // 3. Invoice Pivot View
+    thead.innerHTML = `
+      <tr>
+        <th class="sticky-col" style="min-width: 120px;">Periode</th>
+        <th class="text-right" style="min-width: 150px;">Telkominfra</th>
+        <th class="text-right" style="min-width: 150px;">ZTE</th>
+        <th class="text-right" style="min-width: 150px;">Huawei</th>
+        <th class="text-right col-highlight" style="min-width: 160px; background: rgba(6, 182, 212, 0.08);">Total Piutang In</th>
+        <th class="text-right" style="min-width: 150px;">Mutasi Rekening (TI)</th>
+        <th class="text-center" style="min-width: 100px;">Share (%)</th>
+      </tr>
+    `;
+
+    const invMonthsFiltered = (invData.monthly || []).filter(m => {
+      if (!isMonthFiltered) return true;
+      const b = PO_PERIOD_TO_BULAN[m.period];
+      return b && selMonthsSet.has(b);
+    });
+
+    let sumTI = 0, sumZte = 0, sumHw = 0, sumTotal = 0, sumMutasi = 0;
+    invMonthsFiltered.forEach(r => {
+      sumTI += (r.telkominfra || 0);
+      sumZte += (r.zte || 0);
+      sumHw += (r.huawei || 0);
+      sumTotal += (r.total || 0);
+      sumMutasi += (r.mutasi?.telkominfra || 0);
+    });
+
+    let rowsHtml = '';
+    invMonthsFiltered.forEach(r => {
+      const share = sumTotal > 0 ? ((r.total / sumTotal) * 100).toFixed(1) + '%' : '0%';
+      const bulanKey = PO_PERIOD_TO_BULAN[r.period];
+      rowsHtml += `
+        <tr>
+          <td class="sticky-col font-weight-600">
+            <strong>${r.period}</strong>
+            ${bulanKey ? `<span class="row-subtext" style="display:block; font-size: 0.72rem; color: var(--text-muted);">${bulanKey}</span>` : ''}
+          </td>
+          <td class="text-right font-mono">${r.telkominfra ? formatRp(r.telkominfra) : '-'}</td>
+          <td class="text-right font-mono">${r.zte ? formatRp(r.zte) : '-'}</td>
+          <td class="text-right font-mono">${r.huawei ? formatRp(r.huawei) : '-'}</td>
+          <td class="text-right font-mono font-weight-700 text-cyan" style="background: rgba(6, 182, 212, 0.05);">${formatRp(r.total)}</td>
+          <td class="text-right font-mono">${r.mutasi?.telkominfra ? formatRp(r.mutasi.telkominfra) : '-'}</td>
+          <td class="text-center font-mono font-weight-600 text-muted">${share}</td>
+        </tr>
+      `;
+    });
+
+    rowsHtml += `
+      <tr class="grand-total-row">
+        <td class="sticky-col font-weight-700">GRAND TOTAL</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumTI)}</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumZte)}</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumHw)}</td>
+        <td class="text-right font-mono font-weight-700 text-cyan" style="background: rgba(6, 182, 212, 0.12);">${formatRp(sumTotal)}</td>
+        <td class="text-right font-mono font-weight-700">${formatRp(sumMutasi)}</td>
+        <td class="text-center font-mono font-weight-700">100%</td>
+      </tr>
+    `;
+
+    tbody.innerHTML = rowsHtml;
+  }
+}
+
+function exportPoInvoiceDynamic() {
+  const view = state.poInvoiceView || 'po-comparison';
+  const filename = (view === 'po-comparison')
+    ? `EBDI_PO_vs_Invoice_Komparasi_${new Date().toISOString().slice(0, 10)}.csv`
+    : (view === 'po-pivot')
+    ? `EBDI_PO_Released_Pivot_${new Date().toISOString().slice(0, 10)}.csv`
+    : `EBDI_Invoice_Submit_Pivot_${new Date().toISOString().slice(0, 10)}.csv`;
+
+  exportTableToCSV('tablePoInvoice', filename);
 }

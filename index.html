@@ -165,6 +165,31 @@
         <div class="mf-multiselect-row">
           <span class="mf-filter-group-label">Filter Global:</span>
 
+          <!-- Multi-Select Tahun -->
+          <div class="ms-dropdown" id="msDropdownTahun">
+            <button type="button" class="ms-trigger" id="btnMsTahun" aria-haspopup="listbox" aria-expanded="false">
+              <span class="ms-trigger-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </span>
+              <span class="ms-trigger-label" id="lblMsTahun">Semua Tahun</span>
+              <span class="ms-badge" id="badgeMsTahun" style="display:none;">0</span>
+              <svg class="ms-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="ms-menu" id="menuMsTahun" role="listbox">
+              <div class="ms-menu-header">
+                <div class="ms-search-box">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" class="ms-search-input" id="searchMsTahun" placeholder="Cari tahun...">
+                </div>
+                <div class="ms-actions">
+                  <button type="button" class="ms-action-btn" id="btnSelectAllTahun">Pilih Semua</button>
+                  <button type="button" class="ms-action-btn" id="btnClearTahun">Reset</button>
+                </div>
+              </div>
+              <div class="ms-options-list" id="listMsTahun"></div>
+            </div>
+          </div>
+
           <!-- Multi-Select Bulan -->
           <div class="ms-dropdown" id="msDropdownBulan">
             <button type="button" class="ms-trigger" id="btnMsBulan" aria-haspopup="listbox" aria-expanded="false">
@@ -296,6 +321,10 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         <span>Detail Transaksi (24.6K+)</span>
       </button>
+      <button class="tab-btn" data-tab="tab-poinvoice" role="tab" id="tabPoInvoiceBtn" style="display: none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>Detail PO & Invoice</span>
+      </button>
     </div>
   </nav>
 
@@ -394,6 +423,89 @@
           <div class="kpi-footer">
             <span class="badge badge-purple" id="todayCostTxCount">13 Transaksi</span>
             <span class="kpi-subtext">Pencatatan Hari Terakhir</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 1B: PO & Invoice Revenue KPIs (Khusus Data Gabungan) -->
+      <div class="kpi-po-invoice-section" id="kpiGabunganPoInvoiceSection" style="display: none;">
+        <div class="kpi-section-header">
+          <div class="kpi-section-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>Revenue & Kontrak Proyek (PO Released vs Cash Piutang In)</span>
+          </div>
+          <span class="badge badge-info">Konsolidasi Data Gabungan</span>
+        </div>
+
+        <div class="kpi-grid kpi-grid-4">
+          <!-- Card 1: Total PO Released -->
+          <div class="kpi-card accent-blue">
+            <div class="kpi-header">
+              <span class="kpi-label">Total PO Released</span>
+              <span class="kpi-icon-badge bg-blue">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </span>
+            </div>
+            <div class="kpi-value text-blue" id="kpiTotalPo">Rp 0</div>
+            <div class="kpi-client-breakdown">
+              <div class="client-pill" title="Telkominfra"><span class="client-dot ti-dot"></span>TI: <strong id="kpiPoTelkominfra">-</strong></div>
+              <div class="client-pill" title="ZTE"><span class="client-dot zte-dot"></span>ZTE: <strong id="kpiPoZte">-</strong></div>
+              <div class="client-pill" title="Huawei"><span class="client-dot hw-dot"></span>HW: <strong id="kpiPoHuawei">-</strong></div>
+            </div>
+            <div class="kpi-footer">
+              <span class="badge badge-blue">Kontrak PO Rilis</span>
+              <span class="kpi-subtext">Exclude Tax (Sheet 1)</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Cash Piutang In (Total Invoice Submit) -->
+          <div class="kpi-card accent-cyan">
+            <div class="kpi-header">
+              <span class="kpi-label">Cash Piutang In (Invoice Submit)</span>
+              <span class="kpi-icon-badge bg-cyan">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              </span>
+            </div>
+            <div class="kpi-value text-cyan" id="kpiTotalInvoice">Rp 0</div>
+            <div class="kpi-client-breakdown">
+              <div class="client-pill" title="Telkominfra"><span class="client-dot ti-dot"></span>TI: <strong id="kpiInvTelkominfra">-</strong></div>
+              <div class="client-pill" title="ZTE"><span class="client-dot zte-dot"></span>ZTE: <strong id="kpiInvZte">-</strong></div>
+              <div class="client-pill" title="Huawei"><span class="client-dot hw-dot"></span>HW: <strong id="kpiInvHuawei">-</strong></div>
+            </div>
+            <div class="kpi-footer">
+              <span class="badge badge-cyan">Tagihan Masuk</span>
+              <span class="kpi-subtext">Exclude Tax (Sheet 2)</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Sisa PO Belum Ditagihkan (Unbilled PO) -->
+          <div class="kpi-card accent-amber">
+            <div class="kpi-header">
+              <span class="kpi-label">Sisa PO Belum Ditagihkan</span>
+              <span class="kpi-icon-badge bg-amber">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+              </span>
+            </div>
+            <div class="kpi-value text-amber" id="kpiUnbilledPo">Rp 0</div>
+            <div class="kpi-footer">
+              <span class="badge badge-amber">Unbilled PO</span>
+              <span class="kpi-subtext">PO Released - Piutang In</span>
+            </div>
+          </div>
+
+          <!-- Card 4: Surplus Piutang vs Realisasi Biaya (Net Margin) -->
+          <div class="kpi-card accent-emerald">
+            <div class="kpi-header">
+              <span class="kpi-label">Surplus Piutang vs Realisasi Biaya</span>
+              <span class="kpi-icon-badge bg-emerald">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </span>
+            </div>
+            <div class="kpi-value text-success" id="kpiNetMargin">Rp 0</div>
+            <div class="kpi-footer">
+              <span class="badge badge-success" id="badgeNetMargin">Net Surplus</span>
+              <span class="kpi-subtext">Piutang In - Realisasi Cash Out</span>
+            </div>
           </div>
         </div>
       </div>
@@ -730,6 +842,49 @@
           </div>
         </div>
       </div>
+    <!-- TAB 6: DETAIL PO & INVOICE (PIVOT SHEET 1 & SHEET 2) -->
+    <section id="tab-poinvoice" class="tab-pane">
+      <div class="content-card">
+        <div class="card-header flex-wrap-header">
+          <div class="header-titles">
+            <div class="title-with-toggle">
+              <h2 class="card-title" id="poInvoiceTitle">Detail PO & Invoice (Pivot Data)</h2>
+              <div class="matrix-view-toggle">
+                <button type="button" class="matrix-toggle-btn active" data-view="po-comparison" id="btnTogglePoComparison" title="Tampilkan Komparasi Bulanan">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                  <span>Komparasi Bulanan</span>
+                </button>
+                <button type="button" class="matrix-toggle-btn" data-view="po-pivot" id="btnTogglePoPivot" title="Tampilkan Pivot PO Released">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <span>PO Released Pivot</span>
+                </button>
+                <button type="button" class="matrix-toggle-btn" data-view="inv-pivot" id="btnToggleInvPivot" title="Tampilkan Pivot Invoice Submit">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                  <span>Invoice Submit Pivot</span>
+                </button>
+              </div>
+            </div>
+            <p class="card-subtitle" id="poInvoiceSubtitle">Data perbandingan bulanan antara rilis Purchase Order, tagihan Invoice, realisasi Cash Out, dan mutasi rekening</p>
+          </div>
+          <button class="btn btn-secondary" id="btnExportPoInvoiceDynamic">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Export CSV</span>
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table matrix-table" id="tablePoInvoice">
+            <thead>
+              <tr id="theadPoInvoice">
+                <!-- Dynamically populated -->
+              </tr>
+            </thead>
+            <tbody id="tbodyPoInvoice">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
     </section>
 
   </main>
@@ -761,6 +916,7 @@
   <!-- 2. Pre-bundled Data (No Server / No Python Required - works offline & on file://) -->
   <script src="data.js"></script>
   <script src="data_sarah.js"></script>
+  <script src="data_po_invoice.js"></script>
   <!-- 3. Application Logic with Direct Google Sheets Sync -->
   <script src="app.js"></script>
 </body>
