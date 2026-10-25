@@ -2351,5 +2351,230 @@ body.light-theme .toast-stat-pill {
 .zte-dot { background: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.6); }
 .hw-dot { background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.6); }
 
+/* Sticky column and row styling for PO & Invoice Matrix */
+.matrix-table th.sticky-col,
+.matrix-table td.sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-color);
+}
+.matrix-table thead th.sticky-col {
+  z-index: 3;
+}
+.grand-total-row {
+  background: var(--bg-subtle) !important;
+  font-weight: 700 !important;
+}
+.grand-total-row td {
+  border-top: 2px solid var(--border-color) !important;
+  border-bottom: 2px solid var(--border-color) !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+}
+.grand-total-row td.sticky-col {
+  background: var(--bg-subtle) !important;
+  z-index: 2;
+}
+.col-highlight {
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   Light Mode Overrides for PO & Invoice KPIs and Tab 6
+   ========================================================================== */
+
+body.light-theme .kpi-po-invoice-section {
+  background: linear-gradient(135deg, #f8fafc 0%, #edf4fc 100%);
+  border: 1px solid rgba(2, 132, 199, 0.22);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme .kpi-po-invoice-section::before {
+  background: linear-gradient(90deg, #0284c7, #06b6d4, #10b981);
+}
+
+body.light-theme .kpi-section-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .kpi-section-title {
+  color: #0f172a;
+}
+
+body.light-theme .kpi-section-title svg {
+  color: #0284c7;
+}
+
+body.light-theme .kpi-po-invoice-section .badge-info {
+  background: rgba(2, 132, 199, 0.1);
+  color: #0284c7;
+  border: 1px solid rgba(2, 132, 199, 0.25);
+}
+
+body.light-theme .kpi-po-invoice-section .kpi-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+body.light-theme .kpi-po-invoice-section .kpi-card:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  border-color: rgba(2, 132, 199, 0.3);
+}
+
+body.light-theme .kpi-card-footnote {
+  color: #64748b;
+}
+
+body.light-theme .text-blue {
+  color: #0284c7 !important;
+}
+
+body.light-theme .text-cyan {
+  color: #0891b2 !important;
+}
+
+body.light-theme .text-amber {
+  color: #d97706 !important;
+}
+
+body.light-theme .text-success {
+  color: #059669 !important;
+}
+
+body.light-theme .text-danger {
+  color: #dc2626 !important;
+}
+
+body.light-theme .bg-blue {
+  background: rgba(2, 132, 199, 0.1) !important;
+  color: #0284c7 !important;
+}
+
+body.light-theme .bg-cyan {
+  background: rgba(8, 145, 178, 0.1) !important;
+  color: #0891b2 !important;
+}
+
+body.light-theme .bg-amber {
+  background: rgba(217, 119, 6, 0.1) !important;
+  color: #d97706 !important;
+}
+
+body.light-theme .bg-emerald {
+  background: rgba(5, 150, 105, 0.1) !important;
+  color: #059669 !important;
+}
+
+body.light-theme .badge-blue {
+  background: rgba(2, 132, 199, 0.08);
+  color: #0284c7;
+  border: 1px solid rgba(2, 132, 199, 0.22);
+}
+
+body.light-theme .badge-cyan {
+  background: rgba(8, 145, 178, 0.08);
+  color: #0891b2;
+  border: 1px solid rgba(8, 145, 178, 0.22);
+}
+
+body.light-theme .badge-amber {
+  background: rgba(217, 119, 6, 0.08);
+  color: #d97706;
+  border: 1px solid rgba(217, 119, 6, 0.22);
+}
+
+body.light-theme .badge-success {
+  background: rgba(5, 150, 105, 0.08);
+  color: #059669;
+  border: 1px solid rgba(5, 150, 105, 0.22);
+}
+
+body.light-theme .client-pill {
+  background: #f1f5f9;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #475569;
+}
+
+body.light-theme .client-pill strong {
+  color: #0f172a;
+}
+
+body.light-theme .ti-dot {
+  background: #0284c7;
+  box-shadow: 0 0 4px rgba(2, 132, 199, 0.4);
+}
+
+body.light-theme .zte-dot {
+  background: #059669;
+  box-shadow: 0 0 4px rgba(5, 150, 105, 0.4);
+}
+
+body.light-theme .hw-dot {
+  background: #d97706;
+  box-shadow: 0 0 4px rgba(217, 119, 6, 0.4);
+}
+
+/* Tab 6: PO & Invoice Detail Table Light Theme */
+body.light-theme #tab-poinvoice .content-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme #tab-poinvoice .matrix-view-toggle {
+  background: #f1f5f9;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme #tab-poinvoice .matrix-toggle-btn {
+  color: #475569;
+}
+
+body.light-theme #tab-poinvoice .matrix-toggle-btn:hover {
+  color: #0f172a;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+body.light-theme #tab-poinvoice .matrix-toggle-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+}
+
+body.light-theme #tablePoInvoice thead th {
+  background: #f8fafc;
+  color: #0f172a;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme #tablePoInvoice td.sticky-col,
+body.light-theme #tablePoInvoice th.sticky-col {
+  background: #ffffff;
+  color: #0f172a;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme #tablePoInvoice tbody tr:hover td {
+  background: #f8fafc;
+}
+
+body.light-theme #tablePoInvoice tbody tr:hover td.sticky-col {
+  background: #f1f5f9;
+}
+
+body.light-theme #tablePoInvoice tr.grand-total-row td {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-top: 2px solid rgba(0, 0, 0, 0.12) !important;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+body.light-theme #tablePoInvoice tr.grand-total-row td.sticky-col {
+  background: #f1f5f9 !important;
+}
+
+
 
 

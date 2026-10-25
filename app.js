@@ -221,6 +221,10 @@ function initTabs() {
       const targetPane = document.getElementById(targetId);
       if (targetPane) targetPane.classList.add('active');
 
+      if (targetId === 'tab-poinvoice') {
+        renderPoInvoiceTable();
+      }
+
       window.dispatchEvent(new Event('resize'));
     });
   });
@@ -3667,6 +3671,10 @@ function renderPoInvoiceTable() {
   const tbody = document.getElementById('tbodyPoInvoice');
   if (!table || !thead || !tbody) return;
 
+  if (!state.poInvoiceData && typeof window !== 'undefined' && window.PO_INVOICE_DATA) {
+    state.poInvoiceData = window.PO_INVOICE_DATA;
+  }
+
   const poData = state.poInvoiceData?.po;
   const invData = state.poInvoiceData?.invoice;
   if (!poData || !invData) {
@@ -3711,6 +3719,11 @@ function renderPoInvoiceTable() {
         <th class="text-right" style="min-width: 150px;">Mutasi Masuk (TI)</th>
       </tr>
     `;
+
+    if (filteredMonths.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="13" class="text-center text-muted" style="padding: 2rem;">Tidak ada data PO & Invoice untuk periode bulan yang dipilih.</td></tr>';
+      return;
+    }
 
     let sumPoTI = 0, sumPoZte = 0, sumPoHw = 0, sumPoTotal = 0;
     let sumInvTI = 0, sumInvZte = 0, sumInvHw = 0, sumInvTotal = 0;
@@ -3803,6 +3816,11 @@ function renderPoInvoiceTable() {
       </tr>
     `;
 
+    if (filteredMonths.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted" style="padding: 2rem;">Tidak ada data PO Released untuk periode bulan yang dipilih.</td></tr>';
+      return;
+    }
+
     let sumTI = 0, sumZte = 0, sumHw = 0, sumTotal = 0, sumMutasi = 0;
     filteredMonths.forEach(r => {
       sumTI += (r.telkominfra || 0);
@@ -3865,6 +3883,11 @@ function renderPoInvoiceTable() {
       const b = PO_PERIOD_TO_BULAN[m.period];
       return b && selMonthsSet.has(b);
     });
+
+    if (invMonthsFiltered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted" style="padding: 2rem;">Tidak ada data Invoice Submit untuk periode bulan yang dipilih.</td></tr>';
+      return;
+    }
 
     let sumTI = 0, sumZte = 0, sumHw = 0, sumTotal = 0, sumMutasi = 0;
     invMonthsFiltered.forEach(r => {
