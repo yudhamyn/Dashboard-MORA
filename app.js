@@ -346,6 +346,23 @@ function initEventListeners() {
   document.getElementById('txDetailModal').addEventListener('click', (e) => {
     if (e.target.id === 'txDetailModal') closeModal();
   });
+
+  // Shortcut: Click Today's Cost KPI Card to copy daily WhatsApp report
+  const cardTodayCost = document.getElementById('cardTodayCost');
+  if (cardTodayCost) {
+    cardTodayCost.addEventListener('click', (e) => {
+      const selection = window.getSelection();
+      if (selection && selection.toString().trim().length > 0) return;
+      copyTodayCostReport();
+    });
+
+    cardTodayCost.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        copyTodayCostReport();
+      }
+    });
+  }
 }
 
 let debounceTimer;
@@ -3943,4 +3960,201 @@ function exportPoInvoiceDynamic() {
     : `EBDI_Invoice_Submit_Pivot_${new Date().toISOString().slice(0, 10)}.csv`;
 
   exportTableToCSV('tablePoInvoice', filename);
+}
+
+// ==========================================================================
+// WhatsApp Daily Report Copy Shortcut (Today's Cost KPI Card)
+// ==========================================================================
+
+function formatIndonesianFullDate(dateStr) {
+  const mNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+  if (!dateStr || dateStr === '-' || dateStr.toLowerCase() === 'terbaru') {
+    const now = new Date();
+    return `${now.getDate()} ${mNames[now.getMonth()]} ${now.getFullYear()}`;
+  }
+
+  const s = String(dateStr).trim();
+
+  // If already full Indonesian date format (e.g. 28 Oktober 2026)
+  if (/^\d{1,2}\s+[a-zA-Z]+\s+\d{4}$/.test(s)) {
+    return s;
+  }
+
+  const indonesianMonths = {
+    'jan': 'Januari', 'januari': 'Januari',
+    'feb': 'Februari', 'februari': 'Februari',
+    'mar': 'Maret', 'maret': 'Maret',
+    'apr': 'April', 'april': 'April',
+    'may': 'Mei', 'mei': 'Mei',
+    'jun': 'Juni', 'juni': 'Juni',
+    'jul': 'Juli', 'juli': 'Juli',
+    'aug': 'Agustus', 'agu': 'Agustus', 'agt': 'Agustus', 'agustus': 'Agustus',
+    'sep': 'September', 'september': 'September',
+    'oct': 'Oktober', 'okt': 'Oktober', 'oktober': 'Oktober',
+    'nov': 'November', 'nop': 'November', 'november': 'November',
+    'dec': 'Desember', 'des': 'Desember', 'desember': 'Desember'
+  };
+
+  // Format DD-MMM-YY or DD-MMM-YYYY (e.g. 28-Oct-26, 19-Feb-26)
+  const dmyAlpha = s.match(/^(\d{1,2})[-/\s]([a-zA-Z]+)[-/\s](\d{2,4})$/);
+  if (dmyAlpha) {
+    const day = parseInt(dmyAlpha[1], 10);
+    const mKey = dmyAlpha[2].toLowerCase().slice(0, 3);
+    const month = indonesianMonths[mKey] || indonesianMonths[dmyAlpha[2].toLowerCase()] || dmyAlpha[2];
+    let year = parseInt(dmyAlpha[3], 10);
+    if (year < 100) year += 2000;
+    return `${day} ${month} ${year}`;
+  }
+
+  // Format DD-MM-YYYY or DD/MM/YYYY
+  const dmyNum = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/);
+  if (dmyNum) {
+    const day = parseInt(dmyNum[1], 10);
+    const mIdx = parseInt(dmyNum[2], 10) - 1;
+    let year = parseInt(dmyNum[3], 10);
+    if (year < 100) year += 2000;
+    if (mIdx >= 0 && mIdx < 12) return `${day} ${mNames[mIdx]} ${year}`;
+  }
+
+  // Format YYYY-MM-DD
+  const ymdNum = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if (ymdNum) {
+    const year = parseInt(ymdNum[1], 10);
+    const mIdx = parseInt(ymdNum[2], 10) - 1;
+    const day = parseInt(ymdNum[3], 10);
+    if (mIdx >= 0 && mIdx < 12) return `${day} ${mNames[mIdx]} ${year}`;
+  }
+
+  // Fallback using Date object
+  const parsed = new Date(s);
+  if (!isNaN(parsed.getTime())) {
+    return `${parsed.getDate()} ${mNames[parsed.getMonth()]} ${parsed.getFullYear()}`;
+  }
+
+  // Fallback to today
+  const now = new Date();
+  return `${now.getDate()} ${mNames[now.getMonth()]} ${now.getFullYear()}`;
+}
+
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (e) {
+      console.warn('navigator.clipboard failed, attempting fallback...', e);
+    }
+  }
+
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.setAttribute('readonly', '');
+  textArea.style.position = 'fixed';
+  textArea.style.top = '-9999px';
+  textArea.style.left = '-9999px';
+  textArea.style.opacity = '0';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  let success = false;
+  try {
+    success = document.execCommand('copy');
+  } catch (err) {
+    console.error('Fallback execCommand copy failed:', err);
+  }
+  document.body.removeChild(textArea);
+  return success;
+}
+
+async function copyTodayCostReport() {
+  const dateBadge = document.getElementById('todayCostDate');
+  const amountEl = document.getElementById('todayCostAmount');
+  const txCountEl = document.getElementById('todayCostTxCount');
+  const bcaEl = document.getElementById('kpiBca');
+  const mandiriEl = document.getElementById('kpiMandiri');
+
+  // Format Date
+  const rawDate = dateBadge ? dateBadge.textContent.trim() : '';
+  const formattedDate = formatIndonesianFullDate(rawDate);
+
+  // Format Tx Count
+  const rawCount = txCountEl ? txCountEl.textContent : '';
+  const digits = rawCount.replace(/[^\d]/g, '');
+  const txCount = digits ? parseInt(digits, 10) : (state.summary?.today_cost?.total_transaction || 0);
+
+  // Format Today Cost Amount
+  const costNum = amountEl ? parseCurrency(amountEl.textContent) : (state.summary?.today_cost?.total_cost_num || 0);
+  const formattedCost = formatRp(costNum);
+
+  // Format BCA Balance
+  let bcaNum = (state.summary?.balances?.bca_num !== undefined && state.summary?.balances?.bca_num !== 0)
+    ? state.summary.balances.bca_num
+    : parseCurrency(bcaEl?.textContent || '');
+  const bcaFormatted = formatRp(bcaNum);
+
+  // Format Mandiri Balance
+  let mandiriNum = (state.summary?.balances?.mandiri_num !== undefined && state.summary?.balances?.mandiri_num !== 0)
+    ? state.summary.balances.mandiri_num
+    : parseCurrency(mandiriEl?.textContent || '');
+  const mandiriFormatted = formatRp(mandiriNum);
+
+  // Format exactly matching user's requested WhatsApp template
+  const reportLines = [
+    'Izin lapor om untuk pengeluaran',
+    `hari ini tanggal ${formattedDate}`,
+    `1. Total Transaksi = ${txCount}`,
+    `2. Total Pengeluaran =  ${formattedCost} `,
+    'Sisa Kredit saat ini:',
+    `1. BCA :   ${bcaFormatted} `,
+    `2. MANDIRI : ${mandiriFormatted} `,
+    '',
+    'berikut link dashboardnya om = https://dashboard-mora.netlify.app/',
+    'terimakasi om🙏🏻'
+  ];
+  const reportText = reportLines.join('\n');
+
+  const copied = await copyTextToClipboard(reportText);
+
+  // Visual card feedback
+  const card = document.getElementById('cardTodayCost');
+  const badgePill = document.getElementById('badgeCopyReport');
+  const badgeText = document.getElementById('badgeCopyReportText');
+
+  if (card) {
+    card.classList.add('card-copied-pulse');
+    setTimeout(() => card.classList.remove('card-copied-pulse'), 1200);
+  }
+
+  if (badgePill && badgeText) {
+    badgePill.classList.add('copied');
+    const prevText = badgeText.textContent;
+    badgeText.textContent = 'Tersalin! ✓';
+    setTimeout(() => {
+      badgePill.classList.remove('copied');
+      badgeText.textContent = prevText;
+    }, 2000);
+  }
+
+  if (copied) {
+    showToastNotification({
+      type: 'success',
+      title: 'Rekap Berhasil Dicopy!',
+      subtitle: 'Siap langsung dipaste ke WhatsApp',
+      stats: [
+        { label: 'Tanggal', value: formattedDate },
+        { label: 'Transaksi', value: `${txCount} Tx`, highlight: true },
+        { label: 'Pengeluaran', value: formattedCost, highlight: true }
+      ],
+      duration: 4000
+    });
+  } else {
+    showToastNotification({
+      type: 'warning',
+      title: 'Pemberitahuan Clipboard',
+      subtitle: 'Silakan salin teks secara manual jika browser memblokir clipboard otomatis',
+      duration: 5000
+    });
+  }
 }

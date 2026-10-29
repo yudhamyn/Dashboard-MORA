@@ -409,20 +409,26 @@
         </div>
 
         <!-- Card 5: Today's Cost -->
-        <div class="kpi-card accent-purple">
+        <div class="kpi-card accent-purple kpi-card-clickable" id="cardTodayCost" title="Klik untuk langsung menyalin format rekap pengeluaran ke WhatsApp" role="button" tabindex="0">
           <div class="kpi-header">
             <div class="today-title-group">
               <span class="kpi-label">Today's Cost</span>
               <span class="today-date-badge" id="todayCostDate">11-Oct-26</span>
             </div>
-            <span class="kpi-icon-badge bg-purple">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </span>
+            <div class="kpi-header-right">
+              <span class="kpi-copy-pill" id="badgeCopyReport" title="Salin rekap laporan WhatsApp">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span id="badgeCopyReportText">Salin Rekap</span>
+              </span>
+              <span class="kpi-icon-badge bg-purple">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </span>
+            </div>
           </div>
           <div class="kpi-value text-purple" id="todayCostAmount">Rp 11,148,517</div>
           <div class="kpi-footer">
             <span class="badge badge-purple" id="todayCostTxCount">13 Transaksi</span>
-            <span class="kpi-subtext">Pencatatan Hari Terakhir</span>
+            <span class="kpi-subtext">Pencatatan Hari Terakhir • <span class="kpi-click-hint">Klik untuk Salin WA</span></span>
           </div>
         </div>
       </div>

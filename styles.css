@@ -1105,6 +1105,85 @@ body {
   font-family: var(--font-mono);
 }
 
+.kpi-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kpi-card-clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.kpi-card-clickable:hover {
+  transform: translateY(-3px);
+  border-color: rgba(168, 85, 247, 0.45);
+  box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+}
+
+.kpi-card-clickable:active {
+  transform: translateY(-1px) scale(0.995);
+}
+
+.kpi-copy-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #c084fc;
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.kpi-card:hover .kpi-copy-pill {
+  background: rgba(168, 85, 247, 0.3);
+  border-color: rgba(168, 85, 247, 0.6);
+  color: #f3e8ff;
+  transform: scale(1.03);
+}
+
+.kpi-copy-pill.copied {
+  background: rgba(16, 185, 129, 0.25) !important;
+  border-color: rgba(16, 185, 129, 0.6) !important;
+  color: #34d399 !important;
+}
+
+.kpi-click-hint {
+  color: var(--purple);
+  font-weight: 600;
+  opacity: 0.9;
+  transition: opacity var(--transition-fast);
+}
+
+.kpi-card:hover .kpi-click-hint {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+@keyframes copyPulseGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(168, 85, 247, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0);
+  }
+}
+
+.card-copied-pulse {
+  animation: copyPulseGlow 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  border-color: #a855f7 !important;
+}
+
 /* ==========================================================================
    Badges & Micro UI
    ========================================================================== */
@@ -2584,6 +2663,25 @@ body.light-theme #tablePoInvoice tr.grand-total-row td.sticky-col {
   background: #f1f5f9 !important;
 }
 
+body.light-theme .kpi-card-clickable:hover {
+  border-color: rgba(124, 58, 237, 0.45);
+  box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.18), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
 
+body.light-theme .kpi-copy-pill {
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.08);
+  border-color: rgba(124, 58, 237, 0.25);
+}
 
+body.light-theme .kpi-card:hover .kpi-copy-pill {
+  background: rgba(124, 58, 237, 0.18);
+  border-color: rgba(124, 58, 237, 0.45);
+  color: #6d28d9;
+}
 
+body.light-theme .kpi-copy-pill.copied {
+  background: rgba(5, 150, 105, 0.15) !important;
+  border-color: rgba(5, 150, 105, 0.5) !important;
+  color: #047857 !important;
+}
