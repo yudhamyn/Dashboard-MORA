@@ -4119,22 +4119,9 @@ async function copyTodayCostReport() {
 
   // Visual card feedback
   const card = document.getElementById('cardTodayCost');
-  const badgePill = document.getElementById('badgeCopyReport');
-  const badgeText = document.getElementById('badgeCopyReportText');
-
   if (card) {
     card.classList.add('card-copied-pulse');
     setTimeout(() => card.classList.remove('card-copied-pulse'), 1200);
-  }
-
-  if (badgePill && badgeText) {
-    badgePill.classList.add('copied');
-    const prevText = badgeText.textContent;
-    badgeText.textContent = 'Tersalin! ✓';
-    setTimeout(() => {
-      badgePill.classList.remove('copied');
-      badgeText.textContent = prevText;
-    }, 2000);
   }
 
   if (copied) {
