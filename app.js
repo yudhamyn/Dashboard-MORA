@@ -182,6 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTabs();
   initEventListeners();
   loadDashboardData();
+  initNightlyAutoRefresh();
 });
 
 // Theme Management
@@ -384,11 +385,11 @@ function updateSyncBadgeUI(refreshTime) {
   if (time) {
     badge.classList.remove('not-synced');
     badgeText.textContent = 'Terakhir Diperbarui: ' + time;
-    badge.title = 'Waktu sinkronisasi dataset terakhir: ' + time + ' (Klik untuk refresh ulang)';
+    badge.title = 'Waktu sinkronisasi dataset terakhir: ' + time + ' (Klik untuk refresh ulang manual)';
   } else {
     badge.classList.add('not-synced');
-    badgeText.textContent = 'Belum Disinkronkan (Silakan Klik "Refresh Data")';
-    badge.title = 'Data belum disinkronkan langsung. Silakan klik "Refresh Data" untuk mengambil data terbaru.';
+    badgeText.textContent = 'Menyinkronkan data langsung dari Google Sheets...';
+    badge.title = 'Sedang mengambil data terbaru langsung dari Google Sheets...';
   }
 }
 
@@ -729,21 +730,7 @@ function createCombinedDataset(nabilaData, sarahData) {
 function loadDashboardData() {
   updateSyncBadgeUI();
 
-  const savedSync = localStorage.getItem('ebdi_last_refresh');
-  const initialPrompt = document.getElementById('initialSyncPrompt');
-  const masterFilterContainer = document.getElementById('masterFilterContainer');
-  const navTabsContainer = document.querySelector('.nav-tabs-container');
-  const mainContent = document.querySelector('.main-content');
-
-  // If user has NEVER refreshed/synced data before (first visit):
-  if (!savedSync) {
-    if (initialPrompt) initialPrompt.style.display = 'flex';
-    if (masterFilterContainer) masterFilterContainer.style.display = 'none';
-    if (navTabsContainer) navTabsContainer.style.display = 'none';
-    if (mainContent) mainContent.style.display = 'none';
-    return;
-  }
-
+  // Always reveal the dashboard immediately so user sees pre-bundled data with zero wait
   revealDashboardAfterSync();
 
   // 1. Initialize Nabila data from pre-bundled data.js
@@ -797,6 +784,9 @@ function loadDashboardData() {
     const targetAdmin = (state.adminData[savedAdmin] && state.adminData[savedAdmin].summary) ? savedAdmin : 'nabila';
     switchAdminView(targetAdmin, false);
     updateSyncBadgeUI();
+
+    // Otomatis tarik data teranyar langsung dari Google Sheets pada setiap kali buka web / refresh
+    syncDataDirectFromGoogleSheets({ isAutoOnLoad: true });
   }
 
   if (loadPromises.length > 0) {
@@ -1289,15 +1279,32 @@ function showToastNotification(options = {}) {
 }
 
 // Direct Sync from Google Sheets via Pure JavaScript (Multi-URL Fallback & Live Native CORS)
-async function syncDataDirectFromGoogleSheets() {
+let isSyncingData = false;
+
+async function syncDataDirectFromGoogleSheets(options = {}) {
+  const { isNightly = false, isAutoOnLoad = false, isSilent = false } = options;
+
+  if (isSyncingData) {
+    console.log('[Sync] Sinkronisasi sedang berlangsung, mengabaikan permintaan baru.');
+    return;
+  }
+  isSyncingData = true;
+
   const badge = document.getElementById('syncStatusBadge');
   const badgeText = document.getElementById('syncStatusText');
+  const btnSync = document.getElementById('btnSyncData');
+  if (btnSync) btnSync.classList.add('syncing');
+
   if (badge) {
     badge.classList.remove('not-synced');
     badge.style.borderColor = 'var(--warning)';
     badge.style.color = 'var(--warning)';
   }
-  if (badgeText) badgeText.textContent = 'Menghubungi Google Sheets...';
+  if (badgeText) {
+    badgeText.textContent = isNightly
+      ? 'Sinkronisasi Otomatis 23:00 (Menghubungi Google Sheets)...'
+      : (isAutoOnLoad ? 'Memperbarui data live terbaru...' : 'Menghubungi Google Sheets...');
+  }
 
   const ts = Date.now();
   const nabilaSummaryUrls = [
@@ -1422,26 +1429,42 @@ async function syncDataDirectFromGoogleSheets() {
     }
     updateSyncBadgeUI(timeStr);
 
-    showToastNotification({
-      type: 'success',
-      title: 'Sinkronisasi 2 Admin Berhasil!',
-      subtitle: 'Google Sheets Live Sync Aktif (Nabila & Sarah)',
-      message: '<p>Seluruh data dari spreadsheet <strong>Nabila</strong> dan <strong>Sarah</strong> telah berhasil diperbarui dan digabungkan secara otomatis.</p>',
-      stats: [
-        { label: 'Tx Nabila', value: newNabilaTxs.length.toLocaleString('id-ID') + ' Tx' },
-        { label: 'Tx Sarah', value: newSarahTxs.length.toLocaleString('id-ID') + ' Tx' },
-        { label: 'Total Gabungan', value: (state.adminData.all.transactions || []).length.toLocaleString('id-ID') + ' Tx', highlight: true },
-        { label: 'Total Cash Out Gabungan', value: formatRp(state.adminData.all.summary?.balances?.cash_out_num || 0) }
-      ],
-      action: {
-        label: 'Lihat Transaksi ➔',
-        onClick: () => {
-          const tabBtn = document.querySelector('.tab-btn[data-tab="tab-transaksi"]');
-          if (tabBtn) tabBtn.click();
-        }
-      },
-      duration: 7500
-    });
+    if (!isSilent) {
+      let toastTitle = 'Sinkronisasi 2 Admin Berhasil!';
+      let toastSubtitle = 'Google Sheets Live Sync Aktif (Nabila & Sarah)';
+      let toastMsg = '<p>Seluruh data dari spreadsheet <strong>Nabila</strong> dan <strong>Sarah</strong> telah berhasil diperbarui dan digabungkan secara otomatis.</p>';
+
+      if (isNightly) {
+        toastTitle = 'Pembaruan Otomatis Jam 23:00 Berhasil!';
+        toastSubtitle = 'Jadwal Harian 23:00 WIB Selesai Dijalankan';
+        toastMsg = '<p>Data penutupan hari ini telah berhasil disinkronkan otomatis dari Google Sheets ke dashboard.</p>';
+      } else if (isAutoOnLoad) {
+        toastTitle = 'Data Terkini Berhasil Diperbarui';
+        toastSubtitle = 'Otomatis Disinkronkan Saat Membuka Dashboard';
+        toastMsg = '<p>Dashboard telah memuat data transaksi & keuangan teranyar langsung dari Google Sheets.</p>';
+      }
+
+      showToastNotification({
+        type: 'success',
+        title: toastTitle,
+        subtitle: toastSubtitle,
+        message: toastMsg,
+        stats: [
+          { label: 'Tx Nabila', value: newNabilaTxs.length.toLocaleString('id-ID') + ' Tx' },
+          { label: 'Tx Sarah', value: newSarahTxs.length.toLocaleString('id-ID') + ' Tx' },
+          { label: 'Total Gabungan', value: (state.adminData.all.transactions || []).length.toLocaleString('id-ID') + ' Tx', highlight: true },
+          { label: 'Total Cash Out Gabungan', value: formatRp(state.adminData.all.summary?.balances?.cash_out_num || 0) }
+        ],
+        action: {
+          label: 'Lihat Transaksi ➔',
+          onClick: () => {
+            const tabBtn = document.querySelector('.tab-btn[data-tab="tab-transaksi"]');
+            if (tabBtn) tabBtn.click();
+          }
+        },
+        duration: isNightly ? 6000 : 5000
+      });
+    }
   } catch (err) {
     console.error('Google Sheets sync notice:', err);
     if (badge) {
@@ -1473,37 +1496,141 @@ async function syncDataDirectFromGoogleSheets() {
     }
     switchAdminView(state.activeAdmin, false);
 
-    const now = new Date();
-    const timeStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
-    localStorage.setItem('ebdi_last_refresh', timeStr);
-    updateSyncBadgeUI(timeStr);
-
     revealDashboardAfterSync();
     if (btnPromptText) btnPromptText.textContent = 'Sinkronkan Data Sekarang';
 
     const isFileProtocol = !window.location.protocol.startsWith('http');
-    showToastNotification({
-      type: isFileProtocol ? 'info' : 'warning',
-      title: isFileProtocol ? 'Informasi Sinkronisasi Lokal' : 'Gagal Menghubungi Google Sheets',
-      subtitle: isFileProtocol ? 'Mode Offline / Protokol Berkas' : 'Periksa Koneksi Internet Anda',
-      message: isFileProtocol
-        ? '<p>Saat dibuka secara lokal (<code>file://</code>), browser membatasi CORS langsung ke Google Sheets. Di hosting <strong>Netlify</strong> atau web server, sinkronisasi otomatis berjalan lancar.</p><p style="color:var(--text-primary); font-size:0.8rem; margin-top:4px;">✓ Seluruh data Nabila (24K+) dan Sarah (59K+) tetap <strong>100% lengkap</strong> dan siap digunakan.</p>'
-        : `<p>Gagal menghubungi Google Sheets (${err.message}). Pastikan koneksi internet Anda aktif.</p>`,
-      stats: [
-        { label: 'Total Transaksi Nabila', value: (state.adminData.nabila.transactions || []).length.toLocaleString('id-ID') + ' Tx' },
-        { label: 'Total Transaksi Sarah', value: (state.adminData.sarah.transactions || []).length.toLocaleString('id-ID') + ' Tx' },
-        { label: 'Total Gabungan', value: (state.adminData.all.transactions || []).length.toLocaleString('id-ID') + ' Tx', highlight: true }
-      ],
-      action: {
-        label: 'Lihat Transaksi ➔',
-        onClick: () => {
-          const tabBtn = document.querySelector('.tab-btn[data-tab="tab-transaksi"]');
-          if (tabBtn) tabBtn.click();
-        }
-      },
-      duration: 8000
-    });
+    // If auto-on-load on file:// protocol, don't show a loud error popup because bundled data is already loaded
+    if (!isFileProtocol) {
+      showToastNotification({
+        type: 'warning',
+        title: 'Gagal Menghubungi Google Sheets',
+        subtitle: 'Periksa Koneksi Internet Anda',
+        message: `<p>Gagal menghubungi Google Sheets (${err.message}). Data offline/lokal tetap digunakan.</p>`,
+        stats: [
+          { label: 'Total Transaksi Nabila', value: (state.adminData.nabila.transactions || []).length.toLocaleString('id-ID') + ' Tx' },
+          { label: 'Total Transaksi Sarah', value: (state.adminData.sarah.transactions || []).length.toLocaleString('id-ID') + ' Tx' },
+          { label: 'Total Gabungan', value: (state.adminData.all.transactions || []).length.toLocaleString('id-ID') + ' Tx', highlight: true }
+        ],
+        action: {
+          label: 'Lihat Transaksi ➔',
+          onClick: () => {
+            const tabBtn = document.querySelector('.tab-btn[data-tab="tab-transaksi"]');
+            if (tabBtn) tabBtn.click();
+          }
+        },
+        duration: 6000
+      });
+    }
+  } finally {
+    isSyncingData = false;
+    if (btnSync) btnSync.classList.remove('syncing');
   }
+}
+
+// Nightly Auto Refresh at 23:00 WIB (11:00 PM)
+function initNightlyAutoRefresh() {
+  function getMsUntilNext23WIB() {
+    try {
+      const fmt = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Jakarta',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: false
+      });
+      const parts = fmt.formatToParts(new Date());
+      const p = {};
+      parts.forEach(x => p[x.type] = parseInt(x.value, 10));
+
+      const currentWibSeconds = (p.hour * 3600) + (p.minute * 60) + p.second;
+      const targetWibSeconds = 23 * 3600; // 23:00:00 WIB
+
+      let diffSeconds = targetWibSeconds - currentWibSeconds;
+      if (diffSeconds <= 0) {
+        diffSeconds += 24 * 3600; // Schedule for next day
+      }
+      return diffSeconds * 1000;
+    } catch (e) {
+      const now = new Date();
+      const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 0, 0, 0);
+      if (now.getTime() >= target.getTime()) {
+        target.setDate(target.getDate() + 1);
+      }
+      return target.getTime() - now.getTime();
+    }
+  }
+
+  function getTodayWibDateString() {
+    try {
+      const fmt = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Jakarta',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      return fmt.format(new Date());
+    } catch (e) {
+      return new Date().toISOString().slice(0, 10);
+    }
+  }
+
+  let nightlyTimerId = null;
+
+  function scheduleNextNightly() {
+    if (nightlyTimerId) clearTimeout(nightlyTimerId);
+    const ms = getMsUntilNext23WIB();
+    const hours = (ms / 3600000).toFixed(2);
+    console.log(`[Nightly Scheduler] Pembaruan data otomatis berikutnya dijadwalkan pada jam 23:00 WIB (sekitar ${hours} jam lagi).`);
+
+    nightlyTimerId = setTimeout(async () => {
+      const todayStr = getTodayWibDateString();
+      console.log(`[Nightly Scheduler] Memulai auto-refresh jam 23:00 WIB untuk tanggal ${todayStr}...`);
+      localStorage.setItem('ebdi_last_nightly_sync', todayStr);
+      await syncDataDirectFromGoogleSheets({ isNightly: true });
+      scheduleNextNightly();
+    }, ms);
+  }
+
+  // Watchdog: runs every 30 seconds to recover if the laptop was sleeping / tab throttled during 23:00
+  function checkNightlyWatchdog() {
+    try {
+      const fmt = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Jakarta',
+        hour: 'numeric',
+        hour12: false
+      });
+      const parts = fmt.formatToParts(new Date());
+      const hourPart = parts.find(p => p.type === 'hour');
+      const wibHour = hourPart ? parseInt(hourPart.value, 10) : new Date().getHours();
+
+      const todayStr = getTodayWibDateString();
+      const lastNightly = localStorage.getItem('ebdi_last_nightly_sync');
+
+      // If currently 23:00 - 23:59 WIB and today's nightly sync has not run yet:
+      if (wibHour === 23 && lastNightly !== todayStr && !isSyncingData) {
+        console.log(`[Nightly Watchdog] Waktu saat ini jam 23:00 WIB dan belum disinkronkan hari ini (${todayStr}). Menjalankan refresh otomatis...`);
+        localStorage.setItem('ebdi_last_nightly_sync', todayStr);
+        syncDataDirectFromGoogleSheets({ isNightly: true });
+        scheduleNextNightly();
+      }
+    } catch (err) {
+      console.warn('Watchdog check error:', err);
+    }
+  }
+
+  scheduleNextNightly();
+  setInterval(checkNightlyWatchdog, 30000);
+
+  // When tab becomes active / device wakes from sleep
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      checkNightlyWatchdog();
+    }
+  });
+  window.addEventListener('focus', () => {
+    checkNightlyWatchdog();
+  });
 }
 
 // Populate Summary UI

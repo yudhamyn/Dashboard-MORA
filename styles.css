@@ -270,6 +270,15 @@ body {
   transform: translateY(-1px);
 }
 
+#btnSyncData.syncing {
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+#btnSyncData.syncing svg {
+  animation: rotateSlow 1s linear infinite;
+}
+
 .sync-badge.not-synced {
   background: rgba(245, 158, 11, 0.12);
   border-color: rgba(245, 158, 11, 0.35);
