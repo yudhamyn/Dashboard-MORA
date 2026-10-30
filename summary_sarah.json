@@ -6,12 +6,12 @@
     "total_cost_num": 27151714
   },
   "balances": {
-    "total_kredit": "Rp 80.931.483.937",
-    "total_kredit_num": 80931483937,
-    "cash_out": "Rp 80.852.792.534",
-    "cash_out_num": 80852792534,
-    "sisa_kredit": "Rp 78.691.403",
-    "sisa_kredit_num": 78691403,
+    "total_kredit": "Rp 100.173.879.178",
+    "total_kredit_num": 100173879178,
+    "cash_out": "Rp 99.729.247.775",
+    "cash_out_num": 99729247775,
+    "sisa_kredit": "Rp 444.631.403",
+    "sisa_kredit_num": 444631403,
     "bca": "Rp 0",
     "bca_num": 0,
     "mandiri": "Rp 0",
@@ -394,25 +394,91 @@
     },
     {
       "bulan": "Bulan 2 2026",
-      "kredit_sumbagja": "1.050.000.000",
-      "kredit_sumbagja_num": 1050000000,
-      "kredit_ebdi": "425.061.000",
-      "kredit_ebdi_num": 425061000,
+      "kredit_sumbagja": "1.400.000.000",
+      "kredit_sumbagja_num": 1400000000,
+      "kredit_ebdi": "519.237.000",
+      "kredit_ebdi_num": 519237000,
       "kredit_nabila": "Rp -",
       "kredit_nabila_num": 0,
-      "cash_out": "1.378.516.515",
-      "cash_out_num": 1378516515
+      "cash_out": "1.856.739.688",
+      "cash_out_num": 1856739688
     },
     {
-      "bulan": "Grand Total",
-      "kredit_sumbagja": "67.839.100.000",
-      "kredit_sumbagja_num": 67839100000,
-      "kredit_ebdi": "13.092.383.937",
-      "kredit_ebdi_num": 13092383937,
+      "bulan": "Bulan 3 2026",
+      "kredit_sumbagja": "2.050.000.000",
+      "kredit_sumbagja_num": 2050000000,
+      "kredit_ebdi": "100.566.000",
+      "kredit_ebdi_num": 100566000,
       "kredit_nabila": "Rp -",
       "kredit_nabila_num": 0,
-      "cash_out": "80.852.792.534",
-      "cash_out_num": 80852792534
+      "cash_out": "2.150.445.713",
+      "cash_out_num": 2150445713
+    },
+    {
+      "bulan": "Bulan 4 2026",
+      "kredit_sumbagja": "2.050.000.000",
+      "kredit_sumbagja_num": 2050000000,
+      "kredit_ebdi": "681.033.000",
+      "kredit_ebdi_num": 681033000,
+      "kredit_nabila": "Rp -",
+      "kredit_nabila_num": 0,
+      "cash_out": "2.806.147.881",
+      "cash_out_num": 2806147881
+    },
+    {
+      "bulan": "Bulan 5 2026",
+      "kredit_sumbagja": "2.450.000.000",
+      "kredit_sumbagja_num": 2450000000,
+      "kredit_ebdi": "459.176.643",
+      "kredit_ebdi_num": 459176643,
+      "kredit_nabila": "Rp -",
+      "kredit_nabila_num": 0,
+      "cash_out": "2.514.144.997",
+      "cash_out_num": 2514144997
+    },
+    {
+      "bulan": "Bulan 6 2026",
+      "kredit_sumbagja": "2.200.000.000",
+      "kredit_sumbagja_num": 2200000000,
+      "kredit_ebdi": "380.166.845",
+      "kredit_ebdi_num": 380166845,
+      "kredit_nabila": "Rp -",
+      "kredit_nabila_num": 0,
+      "cash_out": "2.663.499.244",
+      "cash_out_num": 2663499244
+    },
+    {
+      "bulan": "Bulan 7 2026",
+      "kredit_sumbagja": "2.400.000.000",
+      "kredit_sumbagja_num": 2400000000,
+      "kredit_ebdi": "-",
+      "kredit_ebdi_num": 0,
+      "kredit_nabila": "Rp -",
+      "kredit_nabila_num": 0,
+      "cash_out": "2.319.719.281",
+      "cash_out_num": 2319719281
+    },
+    {
+      "bulan": "Bulan 8 2026",
+      "kredit_sumbagja": "2.450.000.000",
+      "kredit_sumbagja_num": 2450000000,
+      "kredit_ebdi": "179.287.200",
+      "kredit_ebdi_num": 179287200,
+      "kredit_nabila": "Rp -",
+      "kredit_nabila_num": 0,
+      "cash_out": "2.629.954.363",
+      "cash_out_num": 2629954363
+    },
+    {
+      "bulan": "Bulan 9 2026",
+      "kredit_sumbagja": "2.250.000.000",
+      "kredit_sumbagja_num": 2250000000,
+      "kredit_ebdi": "1.147.989.553",
+      "kredit_ebdi_num": 1147989553,
+      "kredit_nabila": "Rp -",
+      "kredit_nabila_num": 0,
+      "cash_out": "3.314.320.588",
+      "cash_out_num": 3314320588
     }
   ],
   "cost_detail": {
@@ -438,44 +504,44 @@
             "num": 26351000
           },
           "HQ": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JABAR": {
-            "text": "Rp 23.462.700",
-            "num": 23462700
+            "text": "Rp 84.392.700",
+            "num": 84392700
           },
           "JABO": {
-            "text": "Rp 51.365.000",
-            "num": 51365000
+            "text": "Rp 151.892.000",
+            "num": 151892000
           },
           "JATENG": {
             "text": "Rp 2.200.000",
             "num": 2200000
           },
           "JATIM": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "KALIMANTAN": {
-            "text": "Rp 185.683.000",
-            "num": 185683000
+            "text": "Rp 251.897.000",
+            "num": 251897000
           },
           "SUMBAGSEL": {
-            "text": "Rp 222.835.206",
-            "num": 222835206
+            "text": "Rp 411.225.206",
+            "num": 411225206
           },
           "SUMBAGTENG": {
-            "text": "Rp 36.719.050",
-            "num": 36719050
+            "text": "Rp 37.619.050",
+            "num": 37619050
           },
           "SUMBAGUT": {
-            "text": "Rp 466.535.500",
-            "num": 466535500
+            "text": "Rp 713.680.500",
+            "num": 713680500
           },
           "Grand Total": {
-            "text": "Rp 1.015.151.456",
-            "num": 1015151456
+            "text": "Rp 1.679.257.456",
+            "num": 1679257456
           }
         }
       },
@@ -487,44 +553,44 @@
             "num": 21465500
           },
           "HQ": {
-            "text": "Rp 3.705.158",
-            "num": 3705158
+            "text": "Rp 26.468.126",
+            "num": 26468126
           },
           "JABAR": {
-            "text": "Rp 86.903.000",
-            "num": 86903000
+            "text": "Rp 189.727.300",
+            "num": 189727300
           },
           "JABO": {
-            "text": "Rp 203.875.760",
-            "num": 203875760
+            "text": "Rp 434.770.130",
+            "num": 434770130
           },
           "JATENG": {
             "text": "Rp 7.706.500",
             "num": 7706500
           },
           "JATIM": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "KALIMANTAN": {
-            "text": "Rp 359.304.856",
-            "num": 359304856
+            "text": "Rp 449.356.356",
+            "num": 449356356
           },
           "SUMBAGSEL": {
-            "text": "Rp 546.154.950",
-            "num": 546154950
+            "text": "Rp 1.029.425.624",
+            "num": 1029425624
           },
           "SUMBAGTENG": {
-            "text": "Rp 75.477.000",
-            "num": 75477000
+            "text": "Rp 79.177.000",
+            "num": 79177000
           },
           "SUMBAGUT": {
-            "text": "Rp 830.561.046",
-            "num": 830561046
+            "text": "Rp 1.271.187.362",
+            "num": 1271187362
           },
           "Grand Total": {
-            "text": "Rp 2.135.153.770",
-            "num": 2135153770
+            "text": "Rp 3.509.283.898",
+            "num": 3509283898
           }
         }
       },
@@ -536,44 +602,44 @@
             "num": 278744046
           },
           "HQ": {
-            "text": "Rp 3.855.593.808",
-            "num": 3855593808
+            "text": "Rp 4.286.162.201",
+            "num": 4286162201
           },
           "JABAR": {
-            "text": "Rp 1.085.194.861",
-            "num": 1085194861
+            "text": "Rp 1.269.717.826",
+            "num": 1269717826
           },
           "JABO": {
-            "text": "Rp 4.423.606.730",
-            "num": 4423606730
+            "text": "Rp 5.078.472.076",
+            "num": 5078472076
           },
           "JATENG": {
             "text": "Rp 178.780.170",
             "num": 178780170
           },
           "JATIM": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "KALIMANTAN": {
-            "text": "Rp 2.831.323.615",
-            "num": 2831323615
+            "text": "Rp 2.933.784.454",
+            "num": 2933784454
           },
           "SUMBAGSEL": {
-            "text": "Rp 3.554.094.705",
-            "num": 3554094705
+            "text": "Rp 4.306.286.327",
+            "num": 4306286327
           },
           "SUMBAGTENG": {
-            "text": "Rp 2.233.023.195",
-            "num": 2233023195
+            "text": "Rp 2.236.568.163",
+            "num": 2236568163
           },
           "SUMBAGUT": {
-            "text": "Rp 4.773.386.399",
-            "num": 4773386399
+            "text": "Rp 5.551.869.500",
+            "num": 5551869500
           },
           "Grand Total": {
-            "text": "Rp 23.213.747.529",
-            "num": 23213747529
+            "text": "Rp 26.120.384.763",
+            "num": 26120384763
           }
         }
       },
@@ -581,27 +647,27 @@
         "category": "BOP SITAC",
         "values": {
           "BALNUS": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "HQ": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JABAR": {
-            "text": "Rp 677.685.000",
-            "num": 677685000
+            "text": "Rp 687.685.000",
+            "num": 687685000
           },
           "JABO": {
-            "text": "Rp 1.291.173.800",
-            "num": 1291173800
+            "text": "Rp 1.368.410.800",
+            "num": 1368410800
           },
           "JATENG": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JATIM": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "KALIMANTAN": {
@@ -609,118 +675,20 @@
             "num": 404330500
           },
           "SUMBAGSEL": {
-            "text": "Rp 1.199.880.838",
-            "num": 1199880838
+            "text": "Rp 1.231.880.838",
+            "num": 1231880838
           },
           "SUMBAGTENG": {
             "text": "Rp 966.791.800",
             "num": 966791800
           },
           "SUMBAGUT": {
-            "text": "Rp 879.137.400",
-            "num": 879137400
+            "text": "Rp 1.023.530.200",
+            "num": 1023530200
           },
           "Grand Total": {
-            "text": "Rp 5.418.999.338",
-            "num": 5418999338
-          }
-        }
-      },
-      {
-        "category": "BOPbb",
-        "values": {
-          "BALNUS": {
-            "text": "",
-            "num": 0
-          },
-          "HQ": {
-            "text": "",
-            "num": 0
-          },
-          "JABAR": {
-            "text": "",
-            "num": 0
-          },
-          "JABO": {
-            "text": "",
-            "num": 0
-          },
-          "JATENG": {
-            "text": "",
-            "num": 0
-          },
-          "JATIM": {
-            "text": "",
-            "num": 0
-          },
-          "KALIMANTAN": {
-            "text": "",
-            "num": 0
-          },
-          "SUMBAGSEL": {
-            "text": "",
-            "num": 0
-          },
-          "SUMBAGTENG": {
-            "text": "",
-            "num": 0
-          },
-          "SUMBAGUT": {
-            "text": "Rp 200.000",
-            "num": 200000
-          },
-          "Grand Total": {
-            "text": "Rp 200.000",
-            "num": 200000
-          }
-        }
-      },
-      {
-        "category": "BOPPENGINAPAN",
-        "values": {
-          "BALNUS": {
-            "text": "",
-            "num": 0
-          },
-          "HQ": {
-            "text": "",
-            "num": 0
-          },
-          "JABAR": {
-            "text": "",
-            "num": 0
-          },
-          "JABO": {
-            "text": "",
-            "num": 0
-          },
-          "JATENG": {
-            "text": "",
-            "num": 0
-          },
-          "JATIM": {
-            "text": "",
-            "num": 0
-          },
-          "KALIMANTAN": {
-            "text": "Rp 150.000",
-            "num": 150000
-          },
-          "SUMBAGSEL": {
-            "text": "",
-            "num": 0
-          },
-          "SUMBAGTENG": {
-            "text": "",
-            "num": 0
-          },
-          "SUMBAGUT": {
-            "text": "",
-            "num": 0
-          },
-          "Grand Total": {
-            "text": "Rp 150.000",
-            "num": 150000
+            "text": "Rp 5.682.629.138",
+            "num": 5682629138
           }
         }
       },
@@ -728,48 +696,48 @@
         "category": "COMCASE",
         "values": {
           "BALNUS": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "HQ": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JABAR": {
-            "text": "Rp 30.300.000",
-            "num": 30300000
+            "text": "Rp 108.100.000",
+            "num": 108100000
           },
           "JABO": {
-            "text": "Rp 117.150.000",
-            "num": 117150000
+            "text": "Rp 179.100.000",
+            "num": 179100000
           },
           "JATENG": {
             "text": "Rp 7.000.000",
             "num": 7000000
           },
           "JATIM": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "KALIMANTAN": {
-            "text": "Rp 500.000",
-            "num": 500000
+            "text": "Rp 1.000.000",
+            "num": 1000000
           },
           "SUMBAGSEL": {
-            "text": "Rp 27.176.499",
-            "num": 27176499
+            "text": "Rp 53.956.499",
+            "num": 53956499
           },
           "SUMBAGTENG": {
             "text": "Rp 4.000.000",
             "num": 4000000
           },
           "SUMBAGUT": {
-            "text": "Rp 1.706.200.000",
-            "num": 1706200000
+            "text": "Rp 2.119.550.000",
+            "num": 2119550000
           },
           "Grand Total": {
-            "text": "Rp 1.892.326.499",
-            "num": 1892326499
+            "text": "Rp 2.472.706.499",
+            "num": 2472706499
           }
         }
       },
@@ -785,40 +753,40 @@
             "num": 69819000
           },
           "JABAR": {
-            "text": "Rp 80.900.000",
-            "num": 80900000
+            "text": "Rp 91.065.000",
+            "num": 91065000
           },
           "JABO": {
-            "text": "Rp 2.174.029.153",
-            "num": 2174029153
+            "text": "Rp 2.294.300.815",
+            "num": 2294300815
           },
           "JATENG": {
-            "text": "Rp 194.721.000",
-            "num": 194721000
+            "text": "Rp 265.221.000",
+            "num": 265221000
           },
           "JATIM": {
             "text": "Rp 175.402.071",
             "num": 175402071
           },
           "KALIMANTAN": {
-            "text": "Rp 664.658.689",
-            "num": 664658689
+            "text": "Rp 797.026.689",
+            "num": 797026689
           },
           "SUMBAGSEL": {
-            "text": "Rp 1.625.420.616",
-            "num": 1625420616
+            "text": "Rp 2.065.595.616",
+            "num": 2065595616
           },
           "SUMBAGTENG": {
-            "text": "Rp 1.605.000.000",
-            "num": 1605000000
+            "text": "Rp 1.630.450.000",
+            "num": 1630450000
           },
           "SUMBAGUT": {
-            "text": "Rp 1.021.790.070",
-            "num": 1021790070
+            "text": "Rp 1.430.973.596",
+            "num": 1430973596
           },
           "Grand Total": {
-            "text": "Rp 7.679.740.599",
-            "num": 7679740599
+            "text": "Rp 8.887.853.787",
+            "num": 8887853787
           }
         }
       },
@@ -826,48 +794,48 @@
         "category": "LMD",
         "values": {
           "BALNUS": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "HQ": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JABAR": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JABO": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JATENG": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JATIM": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "KALIMANTAN": {
-            "text": "Rp 443.700",
-            "num": 443700
+            "text": "Rp 943.700",
+            "num": 943700
           },
           "SUMBAGSEL": {
-            "text": "Rp 245.440.000",
-            "num": 245440000
+            "text": "Rp 337.640.000",
+            "num": 337640000
           },
           "SUMBAGTENG": {
             "text": "Rp 6.500.000",
             "num": 6500000
           },
           "SUMBAGUT": {
-            "text": "Rp 1.902.659.209",
-            "num": 1902659209
+            "text": "Rp 2.324.157.209",
+            "num": 2324157209
           },
           "Grand Total": {
-            "text": "Rp 2.155.042.909",
-            "num": 2155042909
+            "text": "Rp 2.669.240.909",
+            "num": 2669240909
           }
         }
       },
@@ -879,44 +847,44 @@
             "num": 298853000
           },
           "HQ": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JABAR": {
-            "text": "Rp 333.587.214",
-            "num": 333587214
+            "text": "Rp 352.477.584",
+            "num": 352477584
           },
           "JABO": {
-            "text": "Rp 2.671.449.000",
-            "num": 2671449000
+            "text": "Rp 2.858.592.000",
+            "num": 2858592000
           },
           "JATENG": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JATIM": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "KALIMANTAN": {
-            "text": "Rp 836.154.000",
-            "num": 836154000
+            "text": "Rp 854.733.000",
+            "num": 854733000
           },
           "SUMBAGSEL": {
-            "text": "Rp 2.283.887.903",
-            "num": 2283887903
+            "text": "Rp 3.038.596.997",
+            "num": 3038596997
           },
           "SUMBAGTENG": {
             "text": "Rp 2.001.397.000",
             "num": 2001397000
           },
           "SUMBAGUT": {
-            "text": "Rp 1.273.286.285",
-            "num": 1273286285
+            "text": "Rp 1.340.304.285",
+            "num": 1340304285
           },
           "Grand Total": {
-            "text": "Rp 9.698.614.402",
-            "num": 9698614402
+            "text": "Rp 10.744.953.866",
+            "num": 10744953866
           }
         }
       },
@@ -924,27 +892,27 @@
         "category": "PLN",
         "values": {
           "BALNUS": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "HQ": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JABAR": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JABO": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JATENG": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JATIM": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "KALIMANTAN": {
@@ -952,20 +920,20 @@
             "num": 174130550
           },
           "SUMBAGSEL": {
-            "text": "Rp 2.285.551.843",
-            "num": 2285551843
+            "text": "Rp 2.526.632.693",
+            "num": 2526632693
           },
           "SUMBAGTENG": {
             "text": "Rp 742.465",
             "num": 742465
           },
           "SUMBAGUT": {
-            "text": "Rp 1.937.759.813",
-            "num": 1937759813
+            "text": "Rp 2.119.319.513",
+            "num": 2119319513
           },
           "Grand Total": {
-            "text": "Rp 4.398.184.671",
-            "num": 4398184671
+            "text": "Rp 4.820.825.221",
+            "num": 4820825221
           }
         }
       },
@@ -973,48 +941,97 @@
         "category": "PLN SITAC",
         "values": {
           "BALNUS": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "HQ": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JABAR": {
-            "text": "Rp 274.717.724",
-            "num": 274717724
+            "text": "Rp 287.859.587",
+            "num": 287859587
           },
           "JABO": {
-            "text": "Rp 478.167.659",
-            "num": 478167659
+            "text": "Rp 502.299.259",
+            "num": 502299259
           },
           "JATENG": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JATIM": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "KALIMANTAN": {
-            "text": "Rp 144.194.741",
-            "num": 144194741
+            "text": "Rp 145.494.741",
+            "num": 145494741
           },
           "SUMBAGSEL": {
             "text": "Rp 598.871.540",
             "num": 598871540
           },
           "SUMBAGTENG": {
-            "text": "Rp 414.545.390",
-            "num": 414545390
+            "text": "Rp 417.423.195",
+            "num": 417423195
           },
           "SUMBAGUT": {
-            "text": "Rp 431.242.524",
-            "num": 431242524
+            "text": "Rp 526.870.331",
+            "num": 526870331
           },
           "Grand Total": {
-            "text": "Rp 2.341.739.578",
-            "num": 2341739578
+            "text": "Rp 2.478.818.653",
+            "num": 2478818653
+          }
+        }
+      },
+      {
+        "category": "pp",
+        "values": {
+          "BALNUS": {
+            "text": "-",
+            "num": 0
+          },
+          "HQ": {
+            "text": "-",
+            "num": 0
+          },
+          "JABAR": {
+            "text": "-",
+            "num": 0
+          },
+          "JABO": {
+            "text": "-",
+            "num": 0
+          },
+          "JATENG": {
+            "text": "-",
+            "num": 0
+          },
+          "JATIM": {
+            "text": "-",
+            "num": 0
+          },
+          "KALIMANTAN": {
+            "text": "-",
+            "num": 0
+          },
+          "SUMBAGSEL": {
+            "text": "Rp 150.000",
+            "num": 150000
+          },
+          "SUMBAGTENG": {
+            "text": "-",
+            "num": 0
+          },
+          "SUMBAGUT": {
+            "text": "-",
+            "num": 0
+          },
+          "Grand Total": {
+            "text": "Rp 150.000",
+            "num": 150000
           }
         }
       },
@@ -1026,44 +1043,44 @@
             "num": 20700000
           },
           "HQ": {
-            "text": "Rp 241.860.000",
-            "num": 241860000
+            "text": "Rp 249.772.000",
+            "num": 249772000
           },
           "JABAR": {
-            "text": "Rp 123.716.000",
-            "num": 123716000
+            "text": "Rp 216.916.000",
+            "num": 216916000
           },
           "JABO": {
-            "text": "Rp 1.406.796.698",
-            "num": 1406796698
+            "text": "Rp 1.684.957.714",
+            "num": 1684957714
           },
           "JATENG": {
             "text": "Rp 52.500.000",
             "num": 52500000
           },
           "JATIM": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "KALIMANTAN": {
-            "text": "Rp 1.126.733.100",
-            "num": 1126733100
+            "text": "Rp 1.280.368.100",
+            "num": 1280368100
           },
           "SUMBAGSEL": {
-            "text": "Rp 1.857.169.897",
-            "num": 1857169897
+            "text": "Rp 3.567.321.369",
+            "num": 3567321369
           },
           "SUMBAGTENG": {
-            "text": "Rp 585.889.299",
-            "num": 585889299
+            "text": "Rp 629.734.299",
+            "num": 629734299
           },
           "SUMBAGUT": {
-            "text": "Rp 2.379.958.470",
-            "num": 2379958470
+            "text": "Rp 4.183.378.739",
+            "num": 4183378739
           },
           "Grand Total": {
-            "text": "Rp 7.795.323.464",
-            "num": 7795323464
+            "text": "Rp 11.885.648.221",
+            "num": 11885648221
           }
         }
       },
@@ -1071,48 +1088,48 @@
         "category": "SALARY",
         "values": {
           "BALNUS": {
-            "text": "Rp 140.683.331",
-            "num": 140683331
+            "text": "Rp 254.683.331",
+            "num": 254683331
           },
           "HQ": {
-            "text": "Rp 1.550.000.000",
-            "num": 1550000000
+            "text": "Rp 1.555.000.000",
+            "num": 1555000000
           },
           "JABAR": {
-            "text": "",
-            "num": 0
+            "text": "Rp 630.283.329",
+            "num": 630283329
           },
           "JABO": {
-            "text": "Rp 1.575.701.064",
-            "num": 1575701064
+            "text": "Rp 2.792.637.703",
+            "num": 2792637703
           },
           "JATENG": {
             "text": "Rp 153.383.324",
             "num": 153383324
           },
           "JATIM": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "KALIMANTAN": {
-            "text": "Rp 2.051.168.327",
-            "num": 2051168327
+            "text": "Rp 2.199.701.658",
+            "num": 2199701658
           },
           "SUMBAGSEL": {
-            "text": "Rp 2.468.080.357",
-            "num": 2468080357
+            "text": "Rp 4.152.847.016",
+            "num": 4152847016
           },
           "SUMBAGTENG": {
-            "text": "Rp 832.987.267",
-            "num": 832987267
+            "text": "Rp 1.463.923.934",
+            "num": 1463923934
           },
           "SUMBAGUT": {
-            "text": "Rp 2.651.959.541",
-            "num": 2651959541
+            "text": "Rp 3.758.472.537",
+            "num": 3758472537
           },
           "Grand Total": {
-            "text": "Rp 11.423.963.211",
-            "num": 11423963211
+            "text": "Rp 16.960.932.832",
+            "num": 16960932832
           }
         }
       },
@@ -1120,48 +1137,48 @@
         "category": "THR",
         "values": {
           "BALNUS": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "HQ": {
-            "text": "Rp 10.000.000",
-            "num": 10000000
+            "text": "Rp 15.833.333",
+            "num": 15833333
           },
           "JABAR": {
-            "text": "",
-            "num": 0
+            "text": "Rp 19.375.000",
+            "num": 19375000
           },
           "JABO": {
             "text": "Rp 115.795.814",
             "num": 115795814
           },
           "JATENG": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "JATIM": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "KALIMANTAN": {
-            "text": "Rp 32.116.667",
-            "num": 32116667
+            "text": "Rp 35.866.667",
+            "num": 35866667
           },
           "SUMBAGSEL": {
-            "text": "Rp 104.154.806",
-            "num": 104154806
+            "text": "Rp 123.196.473",
+            "num": 123196473
           },
           "SUMBAGTENG": {
             "text": "Rp 75.411.761",
             "num": 75411761
           },
           "SUMBAGUT": {
-            "text": "Rp 128.187.566",
-            "num": 128187566
+            "text": "Rp 143.479.233",
+            "num": 143479233
           },
           "Grand Total": {
-            "text": "Rp 465.666.614",
-            "num": 465666614
+            "text": "Rp 528.958.281",
+            "num": 528958281
           }
         }
       },
@@ -1177,88 +1194,88 @@
             "num": 176100000
           },
           "JABAR": {
-            "text": "",
-            "num": 0
+            "text": "Rp 1.100.000",
+            "num": 1100000
           },
           "JABO": {
-            "text": "Rp 306.664.400",
-            "num": 306664400
+            "text": "Rp 338.318.638",
+            "num": 338318638
           },
           "JATENG": {
             "text": "Rp 140.400.000",
             "num": 140400000
           },
           "JATIM": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "KALIMANTAN": {
-            "text": "Rp 74.372.300",
-            "num": 74372300
+            "text": "Rp 79.621.800",
+            "num": 79621800
           },
           "SUMBAGSEL": {
-            "text": "Rp 85.319.782",
-            "num": 85319782
+            "text": "Rp 106.624.782",
+            "num": 106624782
           },
           "SUMBAGTENG": {
-            "text": "",
+            "text": "-",
             "num": 0
           },
           "SUMBAGUT": {
-            "text": "Rp 361.135.012",
-            "num": 361135012
+            "text": "Rp 370.642.031",
+            "num": 370642031
           },
           "Grand Total": {
-            "text": "Rp 1.218.788.494",
-            "num": 1218788494
+            "text": "Rp 1.287.604.251",
+            "num": 1287604251
           }
         }
       }
     ],
     "grand_total": {
       "BALNUS": {
-        "text": "Rp 929.593.877",
-        "num": 929593877
+        "text": "Rp 1.043.593.877",
+        "num": 1043593877
       },
       "HQ": {
-        "text": "Rp 5.907.077.966",
-        "num": 5907077966
+        "text": "Rp 6.379.154.660",
+        "num": 6379154660
       },
       "JABAR": {
-        "text": "Rp 2.716.466.499",
-        "num": 2716466499
+        "text": "Rp 3.938.699.326",
+        "num": 3938699326
       },
       "JABO": {
-        "text": "Rp 14.815.775.078",
-        "num": 14815775078
+        "text": "Rp 17.799.546.949",
+        "num": 17799546949
       },
       "JATENG": {
-        "text": "Rp 736.690.994",
-        "num": 736690994
+        "text": "Rp 807.190.994",
+        "num": 807190994
       },
       "JATIM": {
         "text": "Rp 175.402.071",
         "num": 175402071
       },
       "KALIMANTAN": {
-        "text": "Rp 8.885.264.045",
-        "num": 8885264045
+        "text": "Rp 9.608.255.215",
+        "num": 9608255215
       },
       "SUMBAGSEL": {
-        "text": "Rp 17.104.038.942",
-        "num": 17104038942
+        "text": "Rp 23.550.250.980",
+        "num": 23550250980
       },
       "SUMBAGTENG": {
-        "text": "Rp 8.838.484.227",
-        "num": 8838484227
+        "text": "Rp 9.549.738.667",
+        "num": 9549738667
       },
       "SUMBAGUT": {
-        "text": "Rp 20.743.998.835",
-        "num": 20743998835
+        "text": "Rp 26.877.415.036",
+        "num": 26877415036
       },
       "Grand Total": {
-        "text": "Rp 80.852.792.534",
-        "num": 80852792534
+        "text": "Rp 99.729.247.775",
+        "num": 99729247775
       }
     }
   },

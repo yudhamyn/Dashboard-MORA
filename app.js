@@ -684,7 +684,32 @@ function createCombinedDataset(nabilaData, sarahData) {
   };
 
   // 4. Today cost: take latest between Nabila and Sarah
-  const chosenToday = (nSum.today_cost && nSum.today_cost.total_transaction) ? nSum.today_cost : (sSum.today_cost || {});
+  let chosenToday = {};
+  const nDate = nSum.today_cost?.date;
+  const sDate = sSum.today_cost?.date;
+  const nIso = parseTxDateToISO(nDate) || '';
+  const sIso = parseTxDateToISO(sDate) || '';
+
+  if (nIso && sIso) {
+    if (nIso === sIso) {
+      const totalTx = (nSum.today_cost.total_transaction || 0) + (sSum.today_cost.total_transaction || 0);
+      const totalCostNum = (nSum.today_cost.total_cost_num || 0) + (sSum.today_cost.total_cost_num || 0);
+      chosenToday = {
+        date: nDate,
+        total_transaction: totalTx,
+        total_cost: formatRp(totalCostNum),
+        total_cost_num: totalCostNum
+      };
+    } else if (nIso > sIso) {
+      chosenToday = { ...nSum.today_cost };
+    } else {
+      chosenToday = { ...sSum.today_cost };
+    }
+  } else if (nSum.today_cost?.date) {
+    chosenToday = { ...nSum.today_cost };
+  } else if (sSum.today_cost?.date) {
+    chosenToday = { ...sSum.today_cost };
+  }
 
   return {
     summary: {
@@ -2681,19 +2706,48 @@ function applyMasterFilter() {
     }
   }
 
-  // Today's Cost: Adapt to latest date in filtered transactions, or fallback to latest in summary
+  // Today's Cost: Prioritize official summary today_cost when unfiltered, or adapt dynamically to latest date in filtered transactions
   const todayDateBadge = document.getElementById('todayCostDate');
   const todayAmount = document.getElementById('todayCostAmount');
   const todayTxCount = document.getElementById('todayCostTxCount');
-  if (state.masterFilteredTransactions && state.masterFilteredTransactions.length > 0) {
-    const latestTx = state.masterFilteredTransactions[state.masterFilteredTransactions.length - 1];
-    const latestDate = latestTx.date_trf || latestTx.date_req || '09-Sep-26';
-    const sameDayTxs = state.masterFilteredTransactions.filter(t => (t.date_trf || t.date_req) === latestDate);
-    const sameDaySum = sameDayTxs.reduce((a, b) => a + (b.price_num || 0), 0);
 
-    if (todayDateBadge) todayDateBadge.textContent = latestDate;
-    if (todayAmount) todayAmount.textContent = formatRp(sameDaySum);
-    if (todayTxCount) todayTxCount.textContent = `${sameDayTxs.length} Transaksi`;
+  if (isAll && state.summary && state.summary.today_cost && state.summary.today_cost.date && state.summary.today_cost.date !== '-') {
+    // When viewing all data unfiltered, use the official audited Today's Cost from the Google Sheet
+    const t = state.summary.today_cost;
+    if (todayDateBadge) todayDateBadge.textContent = t.date;
+    if (todayAmount) todayAmount.textContent = t.total_cost || formatRp(t.total_cost_num);
+    if (todayTxCount) todayTxCount.textContent = `${t.total_transaction || 0} Transaksi`;
+  } else if (state.masterFilteredTransactions && state.masterFilteredTransactions.length > 0) {
+    // Find the true maximum date among filtered transactions
+    let latestIso = '';
+    let latestDate = '';
+    for (let i = 0; i < state.masterFilteredTransactions.length; i++) {
+      const tx = state.masterFilteredTransactions[i];
+      const dStr = tx.date_trf || tx.date_req;
+      if (!dStr) continue;
+      const iso = parseTxDateToISO(dStr);
+      if (iso && iso > latestIso) {
+        latestIso = iso;
+        latestDate = dStr;
+      }
+    }
+
+    if (latestDate) {
+      const sameDayTxs = state.masterFilteredTransactions.filter(t => (t.date_trf || t.date_req) === latestDate);
+      const sameDaySum = sameDayTxs.reduce((a, b) => a + (b.price_num || 0), 0);
+      if (todayDateBadge) todayDateBadge.textContent = latestDate;
+      if (todayAmount) todayAmount.textContent = formatRp(sameDaySum);
+      if (todayTxCount) todayTxCount.textContent = `${sameDayTxs.length} Transaksi`;
+    } else if (state.summary && state.summary.today_cost && state.summary.today_cost.date) {
+      const t = state.summary.today_cost;
+      if (todayDateBadge) todayDateBadge.textContent = t.date;
+      if (todayAmount) todayAmount.textContent = t.total_cost || formatRp(t.total_cost_num);
+      if (todayTxCount) todayTxCount.textContent = `${t.total_transaction || 0} Transaksi`;
+    } else {
+      if (todayDateBadge) todayDateBadge.textContent = '-';
+      if (todayAmount) todayAmount.textContent = 'Rp 0';
+      if (todayTxCount) todayTxCount.textContent = '0 Transaksi';
+    }
   } else if (state.summary && state.summary.today_cost && state.summary.today_cost.date) {
     const t = state.summary.today_cost;
     if (todayDateBadge) todayDateBadge.textContent = t.date;
